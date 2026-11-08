@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { addPropertyStyles as s } from "../../assets/dummyStyles";
+import Select from "../../components/common/Select";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_URL from "../../config";
-import { HiUpload } from "react-icons/hi";
+import { HiUpload, HiX } from "react-icons/hi";
+import AiListingWriter from "../../components/ai/AiListingWriter";
 
 const AddProperty = () => {
   const navigate = useNavigate();
@@ -57,6 +59,16 @@ const AddProperty = () => {
     });
   };
 
+  // AI viết tin: điền tiêu đề, mô tả và tiện ích người bán đã chọn vào form (người bán vẫn sửa được)
+  const applyAiDraft = ({ title, description, amenities }) => {
+    setFormData((prev) => ({
+      ...prev,
+      title,
+      description,
+      amenities: [...new Set([...(prev.amenities || []), ...amenities])],
+    }));
+  };
+
   //img handling
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -92,12 +104,14 @@ const AddProperty = () => {
     images.forEach((img) => data.append("images", img));
 
     try {
-      await axios.post(`${API_URL}api/property`, data, {
+      const res = await axios.post(`${API_URL}api/property`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
+      // tin mới phải chờ admin duyệt mới hiển thị công khai
+      if (res.data?.message) alert(res.data.message);
       navigate("/dashboard");
     } catch (error) {
       setError(error.response?.data?.message || "Thêm sản phẩm thất bại !");
@@ -122,6 +136,12 @@ const AddProperty = () => {
             <div className={`${s.sectionHeader} ${s.sectionHeaderLargeMargin}`}>
               <div className={s.sectionBar}></div>
               <h3 className={s.sectionTitle}>Nội dung & Mô tả</h3>
+              <AiListingWriter
+                formData={formData}
+                newImages={images}
+                amenityOptions={commonAmenities}
+                onApply={applyAiDraft}
+              />
             </div>
             <div className={s.contentGroupLarge}>
               <div>
@@ -144,6 +164,7 @@ const AddProperty = () => {
                   onChange={handleInputChange}
                   placeholder="Mô tả những điểm nổi bật của bất động sản..."
                   className={`${s.input} ${s.textarea}`}
+                  maxLength={5000}
                   required
                 ></textarea>
               </div>
@@ -160,17 +181,18 @@ const AddProperty = () => {
               <div className={s.contentGroupMedium}>
                 <div>
                   <label className={s.labelSmallMargin}>Loại BĐS</label>
-                  <select
+                  <Select
                     name="propertyType"
                     value={formData.propertyType}
                     onChange={handleInputChange}
                     className={`${s.input} ${s.select}`}
-                  >
-                    <option value="flat">Căn hộ / Chung cư</option>
-                    <option value="villa">Nhà riêng / Biệt thự</option>
-                    <option value="penthouse">Penthouse</option>
-                    <option value="commercial">Thương mại / Văn phòng</option>
-                  </select>
+                    options={[
+                      { value: "flat", label: "Căn hộ / Chung cư" },
+                      { value: "villa", label: "Nhà riêng / Biệt thự" },
+                      { value: "penthouse", label: "Penthouse" },
+                      { value: "commercial", label: "Thương mại / Văn phòng" },
+                    ]}
+                  />
                 </div>
                 <div className={s.gridThreeCol}>
                   <div>
@@ -215,29 +237,29 @@ const AddProperty = () => {
                     <label className={s.labelSmallMargin}>
                       Tình trạng nội thất
                     </label>
-                    <select
+                    <Select
                       name="furnishing"
                       value={formData.furnishing}
                       onChange={handleInputChange}
                       className={`${s.input} ${s.select}`}
-                    >
-                      <option value="unfurnished">Nhà trống</option>
-                      <option value="semi-furnished">Nội thất cơ bản</option>
-                      <option value="furnished">Nội thất đầy đủ</option>
-                    </select>
+                      options={[
+                        { value: "unfurnished", label: "Nhà trống" },
+                        { value: "semi-furnished", label: "Nội thất cơ bản" },
+                        { value: "furnished", label: "Nội thất đầy đủ" },
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className={s.labelSmallMargin}>
                       Trạng thái tin đăng
                     </label>
-                    <select
+                    <Select
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
                       className={`${s.input} ${s.select}`}
-                    >
-                      <option value="sale">Đang mở bán</option>
-                    </select>
+                      options={[{ value: "sale", label: "Đang mở bán" }]}
+                    />
                   </div>
                 </div>
               </div>
@@ -379,11 +401,9 @@ const AddProperty = () => {
                       type="button"
                       onClick={() => removeImage(i)}
                       className={s.removeButton}
-                      style={{
-                        transform: "rotate(45deg)",
-                      }}
+                      title="Bỏ ảnh này"
                     >
-                      <HiUpload size={12} />
+                      <HiX size={12} />
                     </button>
                   </div>
                 ))}

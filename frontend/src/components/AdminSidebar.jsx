@@ -16,16 +16,16 @@ import { NavLink } from "react-router-dom";
 const AdminSidebar = ({ isOpen, onClose }) => {
   const { logout } = useAuth();
   const navItems = [
-    { name: "Overview", icon: HiOutlineViewGrid, path: "/admin-dashboard" },
-    { name: "Users", icon: HiOutlineUsers, path: "/admin/users" },
+    { name: "Tổng quan", icon: HiOutlineViewGrid, path: "/admin-dashboard" },
+    { name: "Người dùng", icon: HiOutlineUsers, path: "/admin/users" },
     {
-      name: "Seller Requests",
+      name: "Yêu cầu làm người bán",
       icon: HiOutlineUserCircle,
       path: "/admin/seller-requests",
     },
-    { name: "Properties", icon: HiOutlineLibrary, path: "/admin/properties" },
-    { name: "Inquiries", icon: HiOutlineChatAlt2, path: "/admin/inquiries" },
-    { name: "Contact Inbox", icon: HiOutlineMail, path: "/admin/contacts" },
+    { name: "Bất động sản", icon: HiOutlineLibrary, path: "/admin/properties" },
+    { name: "Yêu cầu tư vấn", icon: HiOutlineChatAlt2, path: "/admin/inquiries" },
+    { name: "Hộp thư liên hệ", icon: HiOutlineMail, path: "/admin/contacts" },
   ];
   return (
     <>

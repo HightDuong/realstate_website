@@ -86,7 +86,7 @@ const SellerRequests = () => {
                       <div className={s.requestName}>{request.name}</div>
                       <div className={s.requestDate}>
                         <HiOutlineClock /> Đã tham gia{" "}
-                        {new Date(request.createAt).toLocaleDateString()}
+                        {new Date(request.createdAt).toLocaleDateString("vi-VN")}
                       </div>
                     </div>
                   </div>

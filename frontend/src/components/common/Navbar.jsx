@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { navbarStyles as s } from "../../assets/dummyStyles.js";
 import Logo from "./Logo";
+import NotificationBell from "./NotificationBell";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { Link } from "react-router-dom";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
@@ -14,6 +15,12 @@ const Navbar = () => {
   // nav_links
   const navLinks = (
     <>
+      {user && user.role === "buyer" && (
+        <Link to="/" className={s.navLink} onClick={() => setIsOpen(false)}>
+          Trang chủ
+        </Link>
+      )}
+
       {(!user || user.role === "buyer") && (
         <Link
           to="/properties"
@@ -26,18 +33,8 @@ const Navbar = () => {
 
       {user && user.role === "buyer" && (
         <>
-          <Link to="/" className={s.navLink} onClick={() => setIsOpen(false)}>
-            Home
-          </Link>
           <Link
-            to="/properties"
-            className={s.navLink}
-            onClick={() => setIsOpen(false)}
-          >
-            Properties
-          </Link>
-          <Link
-            to="wishlist"
+            to="/wishlist"
             className={s.navLink}
             onClick={() => setIsOpen(false)}
           >
@@ -86,7 +83,7 @@ const Navbar = () => {
             className={s.navLink}
             onClick={() => setIsOpen(false)}
           >
-            Dashboard
+            Bảng điều khiển
           </Link>
         </>
       )}
@@ -99,7 +96,7 @@ const Navbar = () => {
             className={s.navLink}
             onClick={() => setIsOpen(false)}
           >
-            Admin Panel
+            Trang quản trị
           </Link>
         </>
       )}
@@ -118,17 +115,18 @@ const Navbar = () => {
             <div className={s.rightSection}>
               {user ? (
                 <div className={s.userSection}>
+                  <NotificationBell />
                   <Link to="/profile" className="flex items-center">
                     <img
                       src={
                         user.profilePic ||
-                        `https://ui-avatars.com/api/?name=${user.name}&background=0d6e59&color=fff`
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "")}&background=0d6e59&color=fff`
                       }
-                      alt="Profile"
+                      alt="Ảnh đại diện"
                       className={s.avatar}
                     />
                   </Link>
-                  <button onClick={logout} className="s.logoutButton">
+                  <button onClick={logout} className={s.logoutButton}>
                     Đăng xuất
                   </button>
                 </div>
@@ -164,9 +162,9 @@ const Navbar = () => {
               <img
                 src={
                   user.profilePic ||
-                  `https://ui-avatars.com/api/?name=${user.name}&background=0d6e59&color=fff`
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "")}&background=0d6e59&color=fff`
                 }
-                alt="Profile"
+                alt="Ảnh đại diện"
                 className={s.drawerAvatar}
               />
 
@@ -176,7 +174,7 @@ const Navbar = () => {
               </div>
             </div>
             <button onClick={logout} className={s.drawerLogoutButton}>
-                Đăng xuất 
+              Đăng xuất
             </button>
           </div>
         )}

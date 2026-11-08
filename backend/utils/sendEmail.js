@@ -1,6 +1,6 @@
 const sendEmail = async ( options ) => {
     try {
-        const BREVO_API_KEY = process.env.BREVO_API_KEY.trim();
+        const BREVO_API_KEY = (process.env.BREVO_API_KEY || "").trim();
         if(!BREVO_API_KEY) {
             console.error("Brevo API key is not defined in environment variables");
             throw new Error("Brevo API key is not defined in environment variables");

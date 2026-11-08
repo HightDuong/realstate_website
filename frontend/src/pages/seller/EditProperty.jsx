@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { editPropertyStyles as s } from "../../assets/dummyStyles";
+import Select from "../../components/common/Select";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import API_URL from "../../config";
 import { FaSlack } from "react-icons/fa";
 import { HiUpload, HiX } from "react-icons/hi";
+import AiListingWriter from "../../components/ai/AiListingWriter";
 
 const EditProperty = () => {
   const { id } = useParams();
@@ -91,7 +93,10 @@ const EditProperty = () => {
         setLoading(true);
         setError(null);
 
-        const res = await axios.get(`${API_URL}api/property/${id}`);
+        // gửi token để backend nhận ra chủ tin → không tính là lượt xem
+        const res = await axios.get(`${API_URL}api/property/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         // Kiểm tra cấu trúc response
         const p = res.data?.property || res.data; // ← an toàn hơn
@@ -135,7 +140,7 @@ const EditProperty = () => {
     return () => {
       // Có thể cancel request nếu dùng axios cancel token
     };
-  }, [id]); // ← chỉ phụ thuộc vào id
+  }, [id, token]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -192,12 +197,14 @@ const EditProperty = () => {
     newImages.forEach((img) => data.append("images", img));
 
     try {
-      await axios.put(`${API_URL}api/property/${id}`, data, {
+      const res = await axios.put(`${API_URL}api/property/${id}`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
+      // sửa tiêu đề/mô tả/ảnh hoặc tin bị từ chối → được gửi duyệt lại
+      if (res.data?.message) alert(res.data.message);
       navigate("/dashboard");
     } catch (error) {
       setError(error.response?.data?.message || "Cập nhật BĐS thất bại!");
@@ -239,6 +246,20 @@ const EditProperty = () => {
             <div className={s.sectionHeader}>
               <div className={s.sectionIndicator}></div>
               <h3 className={s.sectionTitle}>Nội dung & Mô tả</h3>
+              <AiListingWriter
+                formData={formData}
+                existingImages={existingImages}
+                newImages={newImages}
+                amenityOptions={commonAmenities}
+                onApply={({ title, description, amenities }) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    title,
+                    description,
+                    amenities: [...new Set([...(prev.amenities || []), ...amenities])],
+                  }))
+                }
+              />
             </div>
             <div className={s.sectionContent}>
               <div>
@@ -262,6 +283,7 @@ const EditProperty = () => {
                   onChange={handleInputChange}
                   placeholder="Nhập nội dung..."
                   className={s.textarea}
+                  maxLength={5000}
                   required
                 ></textarea>
               </div>
@@ -280,17 +302,18 @@ const EditProperty = () => {
                 <div>
                   <label className={s.label}>Loại bất động sản</label>
 
-                  <select
+                  <Select
                     name="propertyType"
                     value={formData.propertyType}
                     onChange={handleInputChange}
                     className={s.select}
-                  >
-                    <option value="flat">Căn hộ / Chung cư</option>
-                    <option value="villa">Nhà riêng / Biệt thự</option>
-                    <option value="penthouse">Penthouse</option>
-                    <option value="commercial">Thương mại</option>
-                  </select>
+                    options={[
+                      { value: "flat", label: "Căn hộ / Chung cư" },
+                      { value: "villa", label: "Nhà riêng / Biệt thự" },
+                      { value: "penthouse", label: "Penthouse" },
+                      { value: "commercial", label: "Thương mại" },
+                    ]}
+                  />
                 </div>
 
                 <div className={s.threeColumnGrid}>
@@ -339,30 +362,32 @@ const EditProperty = () => {
                   <div>
                     <label className={s.label}>Tình trạng nội thất</label>
 
-                    <select
+                    <Select
                       name="furnishing"
                       value={formData.furnishing}
                       onChange={handleInputChange}
                       className={s.select}
-                    >
-                      <option value="unfurnished">Không nội thất</option>
-                      <option value="semi-furnished">Nội thất cơ bản</option>
-                      <option value="furnished">Đầy đủ nội thất</option>
-                    </select>
+                      options={[
+                        { value: "unfurnished", label: "Không nội thất" },
+                        { value: "semi-furnished", label: "Nội thất cơ bản" },
+                        { value: "furnished", label: "Đầy đủ nội thất" },
+                      ]}
+                    />
                   </div>
 
                   <div>
                     <label className={s.label}>Trạng thái tin đăng</label>
 
-                    <select
+                    <Select
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
                       className={s.select}
-                    >
-                      <option value="sale">Đang mở bán</option>
-                      <option value="sold">Đã bán</option>
-                    </select>
+                      options={[
+                        { value: "sale", label: "Đang mở bán" },
+                        { value: "sold", label: "Đã bán" },
+                      ]}
+                    />
                   </div>
                 </div>
               </div>
@@ -480,7 +505,7 @@ const EditProperty = () => {
               {/* Hình ảnh hiện có */}
               {existingImages.map((src, i) => (
                 <div key={`existing-${i}`} className={s.imageCard}>
-                  <img src={src} alt="Existing" className={s.imageCardImg} />
+                  <img src={src} alt="Ảnh hiện có" className={s.imageCardImg} />
 
                   <button
                     type="button"
@@ -497,7 +522,7 @@ const EditProperty = () => {
               {/* Xem trước ảnh mới */}
               {newImagePreviews.map((src, i) => (
                 <div key={`new-${i}`} className={s.imageCardNew}>
-                  <img src={src} alt="New Preview" className={s.imageCardImg} />
+                  <img src={src} alt="Ảnh xem trước" className={s.imageCardImg} />
 
                   <button
                     type="button"

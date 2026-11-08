@@ -21,6 +21,13 @@ import {
   HiX,
 } from "react-icons/hi";
 import PropertyCard from "../../components/common/PropertyCard";
+import {
+  formatVND,
+  getFurnishingLabel,
+  getPropertyTypeLabel,
+  getStatusLabel,
+  joinAddress,
+} from "../../utils/propertyLabels";
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -121,7 +128,7 @@ const PropertyDetails = () => {
   const handleWishlistToggle = async () => {
     if (!user) return navigate("/login");
     try {
-      if (!isInWishlist) {
+      if (isInWishlist) {
         await axios.delete(`${API_URL}api/wishlist/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -137,7 +144,7 @@ const PropertyDetails = () => {
         setIsInWishlist(true);
       }
     } catch (err) {
-      alert("Cập nhật thất bại!");
+      alert(err.response?.data?.message || "Cập nhật danh sách yêu thích thất bại!");
     }
   };
 
@@ -150,9 +157,9 @@ const PropertyDetails = () => {
     setInquiryStatus({ ...inquiryStatus, loading: true });
     try {
       await axios.post(
-        `${API_URL}api/inquiries`,
+        `${API_URL}api/inquiry`,
         {
-          propertyID: id,
+          propertyId: id,
           message: inquiry.message,
         },
         {
@@ -165,7 +172,9 @@ const PropertyDetails = () => {
       setInquiryStatus({
         loading: false,
         success: false,
-        error: "Gửi yêu cầu thất bại. Vui lòng thử lại sau!",
+        error:
+          err.response?.data?.message ||
+          "Gửi yêu cầu thất bại. Vui lòng thử lại sau!",
       });
     }
   };
@@ -177,22 +186,28 @@ const PropertyDetails = () => {
     try {
       const res = await axios.post(
         `${API_URL}api/chat/start`,
-        { propertyID: id, sellerId: property.seller._id },
+        { propertyId: id, sellerId: property.seller._id },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       const chat = res.data;
-      await axios.post(
-        `${API_URL}api/chat/send`,
-        {
-          chatId: chat._id,
-          text: `Xin chào! Tôi quan tâm đến bất động sản "${property.title}". Bạn có thể cung cấp thêm thông tin chi tiết không?`,
-          image: property.images?.[0] || "",
-        },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      // Chỉ gửi lời chào tự động khi cuộc trò chuyện còn trống (tránh lặp lại mỗi lần bấm "Chat")
+      if (!chat.messages?.length) {
+        await axios.post(
+          `${API_URL}api/chat/send`,
+          {
+            chatId: chat._id,
+            text: `Xin chào! Tôi quan tâm đến bất động sản "${property.title}". Bạn có thể cung cấp thêm thông tin chi tiết không?`,
+            image: property.images?.[0] || "",
+          },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+      }
       navigate(`/chat-messages`, { state: { chat } });
     } catch (err) {
-      alert("Không thể bắt đầu trò chuyện. Vui lòng thử lại sau!");
+      alert(
+        err.response?.data?.message ||
+          "Không thể bắt đầu trò chuyện. Vui lòng thử lại sau!",
+      );
     }
   };
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -212,11 +227,7 @@ const PropertyDetails = () => {
       </div>
     );
 
-  const formattedPrice = new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(property.price);
+  const formattedPrice = formatVND(property.price);
 
   const openLightbox = (index) => setLightboxIndex(index);
   const closeLightbox = () => setLightboxIndex(null);
@@ -332,14 +343,16 @@ const PropertyDetails = () => {
           <div className={s.infoColumn}>
             <div className={s.infoHeader}>
               <div className={s.titleWrapper}>
-                <div className={s.badgeWrapper}>
-                  <span className={s.premiumBadge}>Danh sách cao cấp</span>
-                </div>
+                {property.isVerified && (
+                  <div className={s.badgeWrapper}>
+                    <span className={s.premiumBadge}>Tin đã kiểm duyệt</span>
+                  </div>
+                )}
                 <h1 className={s.propertyTitle}>{property.title}</h1>
                 <p className={s.propertyLocation}>
                   <HiLocationMarker className={s.locationIcon} />
                   <span className={s.locationText}>
-                    {property.area},{property.city} ,Việt Nam
+                    {joinAddress(property.area, property.city, "Việt Nam")}
                   </span>
                 </p>
               </div>
@@ -362,30 +375,28 @@ const PropertyDetails = () => {
             <div className={s.statsGrid}>
               {[
                 {
-                  label: "Bedrooms",
-                  value: property.bhk || 0,
+                  label: "Phòng ngủ",
+                  value: property.bhk || "—",
                   icon: HiOutlineHome,
                 },
                 {
-                  label: "Bathrooms",
-                  value:
-                    property.bathrooms ||
-                    Math.max(1, (parseInt(property.bhk) || 1) - 1),
+                  label: "Phòng tắm",
+                  value: property.bathrooms || "—",
                   icon: HiOutlineUserGroup,
                 },
                 {
-                  label: "Furnishing",
-                  value: property.furnishing || "N/A",
+                  label: "Nội thất",
+                  value: getFurnishingLabel(property.furnishing),
                   icon: HiCollection,
                 },
                 {
-                  label: "Living Area",
-                  value: `${property.areaSize} sqft`,
+                  label: "Diện tích sử dụng",
+                  value: property.areaSize ? `${property.areaSize} m²` : "Chưa cập nhật",
                   icon: HiOutlineViewGrid,
                 },
                 {
-                  label: "Type",
-                  value: property.propertyType,
+                  label: "Loại hình",
+                  value: getPropertyTypeLabel(property.propertyType),
                   icon: HiCalendar,
                 },
               ].map((stat, i) => (
@@ -407,7 +418,7 @@ const PropertyDetails = () => {
               <div className={s.amenitiesGrid}>
                 {(property.amenities?.length
                   ? property.amenities
-                  : ["Parking", "Security", "Water Supply", "Power Backup"]
+                  : ["Chỗ để xe", "An ninh", "Cấp nước", "Điện dự phòng"]
                 ).map((amn, i) => (
                   <div key={i} className={s.amenityItem}>
                     <HiBadgeCheck size={18} className={s.amenityIcon} />
@@ -424,16 +435,15 @@ const PropertyDetails = () => {
             >
               <div className={s.priceCardLabel}>
                 {property.status?.toLowerCase() === "rent"
-                  ? "Rental Details"
+                  ? "Thông tin cho thuê"
                   : "Giá sản phẩm"}
               </div>
               <div className={s.priceCardValue}>
                 {property.status?.toLowerCase() === "rent"
                   ? `${Number(property.price).toLocaleString("vi-VN")}`
-                  : formattedPrice}{" "}
-                VND
+                  : formattedPrice}
                 {property.status?.toLowerCase() === "rent" && (
-                  <span className={s.priceCardPeriod}> /month</span>
+                  <span className={s.priceCardPeriod}> /tháng</span>
                 )}
               </div>
               {property.status?.toLowerCase() === "rent" && (
@@ -453,14 +463,13 @@ const PropertyDetails = () => {
                       {Number(property.maintenance || 0).toLocaleString(
                         "vi-VN",
                       )}
-                      VNĐ /mo
+                      VNĐ /tháng
                     </span>
                   </div>
                 </div>
               )}
               <div className={s.priceCardAvailability}>
-                Đang mở bán{" "}
-                {property.status?.toLowerCase() === "rent" ? "Rent" : "Sale"}
+                {getStatusLabel(property.status)}
               </div>
             </div>
             {/* seller & contact */}
@@ -472,18 +481,18 @@ const PropertyDetails = () => {
                       property.seller?.profilePic ||
                       `https://ui-avatars.com/api/?name=${property.seller?.name || "Seller"}&background=0d6e59&color=fff`
                     }
-                    alt="Agent"
+                    alt="Người bán"
                     className={s.sellerAvatarImage}
                   />
                 </div>
                 <div className={s.sellerDetails}>
                   <div className={s.sellerNameLink}>
                     <h4 className={s.sellerName}>
-                      {property.seller?.name || "Seller"}
+                      {property.seller?.name || "Người bán"}
                     </h4>
                   </div>
                   <div className={s.sellerVerifiedBadge}>
-                    <HiBadgeCheck className={s.verifiedIcon} /> Verified Seller
+                    <HiBadgeCheck className={s.verifiedIcon} /> Người bán đã xác minh
                   </div>
                 </div>
               </div>
@@ -500,7 +509,7 @@ const PropertyDetails = () => {
                 {user?.role === "buyer" ? (
                   <>
                     <textarea
-                      placeholder="Your Message..."
+                      placeholder="Nội dung tin nhắn..."
                       value={inquiry.message}
                       onChange={(e) =>
                         setInquiry({ ...inquiry, message: e.target.value })
@@ -513,10 +522,15 @@ const PropertyDetails = () => {
                       className={s.inquirySubmitButton}
                       disabled={inquiryStatus.loading}
                     >
-                      {inquiryStatus.loading ? "Sending..." : "Send Inquiry"}
+                      {inquiryStatus.loading ? "Đang gửi..." : "Gửi yêu cầu"}
                     </button>
                     {inquiryStatus.success && (
-                      <p className={s.inquirySuccessMessage}>Inquiry sent!</p>
+                      <p className={s.inquirySuccessMessage}>Đã gửi yêu cầu!</p>
+                    )}
+                    {inquiryStatus.error && (
+                      <p className="mt-3 text-sm font-medium text-[#dc2626]">
+                        {inquiryStatus.error}
+                      </p>
                     )}
                   </>
                 ) : (
@@ -524,11 +538,11 @@ const PropertyDetails = () => {
                     <p className={s.inquiryDisabledText}>
                       {user
                         ? "Chỉ người mua được gửi yêu cầu."
-                        : "Đăng nhập để liên hệ với người mua."}
+                        : "Đăng nhập để liên hệ với người bán."}
                     </p>
                     {!user && (
                       <Link to="/login" className={s.inquiryLoginButton}>
-                        Login
+                        Đăng nhập
                       </Link>
                     )}
                   </div>
@@ -547,10 +561,10 @@ const PropertyDetails = () => {
               },
               {
                 label: "Được thêm vào ngày",
-                value: new Date(property.createdAt).toLocaleDateString(),
+                value: new Date(property.createdAt).toLocaleDateString("vi-VN"),
               },
-              { label: "Kiểu BDS", value: property.propertyType },
-              { label: "Trạng thái", value: `For ${property.status}` },
+              { label: "Kiểu BĐS", value: getPropertyTypeLabel(property.propertyType) },
+              { label: "Trạng thái", value: getStatusLabel(property.status) },
             ].map((detail, i) => (
               <div key={i} className={s.detailRow}>
                 <span className={s.detailLabel}>{detail.label}</span>

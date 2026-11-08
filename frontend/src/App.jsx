@@ -31,6 +31,8 @@ import MyInquires from "./pages/buyer/MyInquiries";
 import ChatMessages from "./pages/shared/ChatMessages";
 import Contact from "./pages/shared/Contact";
 import Wishlist from "./pages/buyer/Wishlist";
+import AiChatWidget from "./components/ai/AiChatWidget";
+import { shouldShowAiChat } from "./components/ai/aiChatConfig";
 
 //to scroll to top whenever the route is change
 const ScrollToTopOnRouteChange = () => {
@@ -46,6 +48,9 @@ const ScrollToTopOnRouteChange = () => {
 //floating scroll to top btn
 const ScrollTopButton = () => {
   const [visible, setVisible] = useState(false);
+  const { pathname } = useLocation();
+  // trang có nút trợ lý AI ở góc phải dưới → đẩy nút này lên trên
+  const bottomClass = shouldShowAiChat(pathname) ? "bottom-24" : "bottom-6";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -64,7 +69,7 @@ const ScrollTopButton = () => {
   return (
     <button
       onClick={handleClick}
-      className={`fixed bottom-6 
+      className={`fixed ${bottomClass}
         right-6 z-50 flex h-12 w-16 items-center justify-center rounded-full shadow-lg transition-all
         duration-300 ${
           visible
@@ -85,8 +90,9 @@ const SellerLayoutWrapper = () => {
 
 const App = () => {
   useEffect(() => {
-    document.body.style.overflowX = "hidden";
-    document.documentElement.style.overflowX = "hidden";
+    // "clip" thay vì "hidden": "hidden" biến body thành vùng cuộn riêng và làm hỏng position: sticky
+    document.body.style.overflowX = "clip";
+    document.documentElement.style.overflowX = "clip";
 
     return () => {
       document.body.style.overflowX = "";
@@ -94,9 +100,10 @@ const App = () => {
     }; //ngăn chặn tình trạng tràn khung theo chiều ngang trên toàn bộ ứng dụng
   }, []);
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
+    <div className="min-h-screen w-full overflow-x-clip">
       <ScrollToTopOnRouteChange />
       <ScrollTopButton />
+      <AiChatWidget />
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/register" element={<Register />} />

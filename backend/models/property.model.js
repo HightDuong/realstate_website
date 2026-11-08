@@ -71,15 +71,31 @@ const propertySchema = new mongoose.Schema({
       ref: "User",
       required: true,
     },
+    // Đồng bộ với moderationStatus === "approved" (nhãn "Đã kiểm duyệt" trên thẻ BĐS)
     isVerified: {
       type: Boolean,
       default: false,
     },
+    // Kiểm duyệt tin: pending (chờ duyệt, ẩn khỏi trang công khai) | approved | rejected.
+    // Không có default: tin cũ (tạo trước khi có kiểm duyệt) không có field này và vẫn hiển thị công khai.
+    moderationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+    },
+    rejectionReason: { type: String },
+    moderatedAt: { type: Date },
+    moderatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     views: {
       type: Number,
       default: 0,
     },
-    viewedBy: [{ type: String }],
+    // IP / id người đã xem (đếm lượt xem duy nhất). select: false → không bao giờ trả về client.
+    viewedBy: { type: [String], select: false },
+    // Vector ngữ nghĩa (OpenAI text-embedding-3-small) cho chatbot tìm nhà.
+    // select: false → không bao giờ gửi về client, chỉ lấy khi gọi .select("+embedding")
+    embedding: { type: [Number], select: false, default: undefined },
+    embeddingModel: { type: String, select: false },
+    embeddedAt: { type: Date, select: false },
  
 },{ timestamps: true });
 

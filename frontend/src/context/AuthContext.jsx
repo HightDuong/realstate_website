@@ -27,9 +27,8 @@ export const AuthProvider = ({ children }) => {
       (response) => response,
       (error) => {
         if (
-          error.response &&
-          error.response.status === 403 &&
-          error.response.data.message.includes("blocked")
+          error.response?.status === 403 &&
+          error.response.data?.code === "ACCOUNT_BLOCKED"
         ) {
           logout();
         }
@@ -58,7 +57,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Login failed",
+        message: error.response?.data?.message || "Đăng nhập thất bại",
       };
     }
   };

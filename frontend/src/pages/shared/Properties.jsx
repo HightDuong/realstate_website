@@ -14,6 +14,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_URL from "../../config";
 import PropertyCard from "../../components/common/PropertyCard";
+import Select from "../../components/common/Select";
+import Pagination from "../../components/common/Pagination";
+import RecommendedProperties from "../../components/ai/RecommendedProperties";
+
+const PAGE_SIZE = 12; // 3 hàng × 4 thẻ
 
 const Properties = () => {
   const navigate = useNavigate();
@@ -25,6 +30,13 @@ const Properties = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
+
+  // phân trang
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const requestIdRef = useRef(0); // bỏ qua response cũ khi người dùng đổi bộ lọc liên tục
+  const resultsTopRef = useRef(null);
 
   const [filters, setFilters] = useState({
     city: "",
@@ -168,9 +180,12 @@ const Properties = () => {
   };
 
   //to fetch properties
-  const fetchProperties = async (currentFilters) => {
+  // đổi bộ lọc/sắp xếp luôn gọi với pageToLoad = 1 (quay về trang đầu)
+  const fetchProperties = async (currentFilters, pageToLoad = 1) => {
+    const requestId = ++requestIdRef.current;
     try {
       setLoading(true);
+      setPage(pageToLoad);
       const params = new URLSearchParams();
       if (currentFilters.city) params.append("city", currentFilters.city);
       if (currentFilters.propertyType.length > 0)
@@ -181,17 +196,45 @@ const Properties = () => {
       if (currentFilters.furnishing && currentFilters.furnishing.length > 0)
         params.append("furnishing", currentFilters.furnishing.join(","));
       if (currentFilters.sort) params.append("sort", currentFilters.sort);
+      params.append("page", pageToLoad);
+      params.append("limit", PAGE_SIZE);
 
       const res = await axios.get(
         `${API_URL}api/property?${params.toString()}`,
       );
-      setProperties(res.data.properties);
+      if (requestId !== requestIdRef.current) return;
+
+      const items = res.data.properties || [];
+      const newTotal = res.data.total ?? items.length;
+      const newTotalPages = Math.max(1, Math.ceil(newTotal / PAGE_SIZE));
+
+      // trang yêu cầu không còn tồn tại (vd. tin vừa bị xóa) → chuyển về trang cuối
+      if (items.length === 0 && pageToLoad > newTotalPages && newTotal > 0) {
+        return fetchProperties(currentFilters, newTotalPages);
+      }
+
+      setProperties(items);
+      setTotal(newTotal);
+      setTotalPages(newTotalPages);
       setError(null);
     } catch (err) {
-      setError("Failed to load properties. Please try again later.");
+      if (requestId !== requestIdRef.current) return;
+      setError("Không thể tải danh sách bất động sản. Vui lòng thử lại sau.");
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
+  };
+
+  const goToPage = (target) => {
+    if (target < 1 || target > totalPages || target === page || loading) return;
+    fetchProperties(filters, target);
+    // cuộn lên đầu danh sách (trừ phần navbar cố định)
+    const top = resultsTopRef.current
+      ? resultsTopRef.current.getBoundingClientRect().top + window.scrollY - 120
+      : 0;
+    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
   };
   const fetchTimer = useRef(null);
 
@@ -238,11 +281,6 @@ const Properties = () => {
     fetchProperties(updatedFilters);
   };
 
-  const applyFilters = () => {
-    if (fetchTimer.current) clearTimeout(fetchTimer.current);
-    fetchProperties(filters);
-  };
-
   const resetFilters = () => {
     if (fetchTimer.current) clearTimeout(fetchTimer.current);
     const reset = {
@@ -283,7 +321,7 @@ const Properties = () => {
               </div>
               <div className={s.sidebarHeaderActions}>
                 <button onClick={resetFilters} className={s.resetButton}>
-                  Reset
+                  Đặt lại
                 </button>
                 <button
                   className={s.closeMobileFilters}
@@ -404,13 +442,18 @@ const Properties = () => {
 
           {/* main content */}
 
-          <main className={s.mainContent}>
+          <main ref={resultsTopRef} className={s.mainContent}>
+            <RecommendedProperties
+              key={user?._id || "guest"}
+              wishlistedIds={wishlistedIds}
+              onToggleWishlist={handleToggleWishlist}
+            />
             <div className={s.contentHeader}>
               <div>
                 <span className={s.resultCount}>
-                  Đang hiển thị{" "}
+                  Tìm thấy{" "}
                   <strong className={s.resultCountStrong}>
-                    {loading ? "..." : properties.length}
+                    {loading ? "..." : total}
                   </strong>{" "}
                   Bất động sản
                 </span>
@@ -440,22 +483,24 @@ const Properties = () => {
                 </div>
                 <div className={s.sortControl}>
                   <span className={s.sortLabel}>Sắp xếp:</span>
-                  <select
+                  <Select
                     value={filters.sort}
                     onChange={handleSortChange}
                     className={s.sortSelect}
-                  >
-                    <option value="latest">Latest</option>
-                    <option value="priceLow">Price: Low to High</option>
-                    <option value="priceHigh">Price: High to Low</option>
-                  </select>
+                    ariaLabel="Sắp xếp"
+                    options={[
+                      { value: "latest", label: "Mới nhất" },
+                      { value: "priceLow", label: "Giá: Thấp đến Cao" },
+                      { value: "priceHigh", label: "Giá: Cao đến Thấp" },
+                    ]}
+                  />
                 </div>
               </div>
             </div>
             {/* property grid */}
             {loading ? (
               <div className={s.skeletonGrid}>
-                {[1, 2, 3, 4, 5, 6].map((i) => (
+                {Array.from({ length: PAGE_SIZE }, (_, i) => (
                   <div key={i} className={s.skeletonCard}></div>
                 ))}
               </div>
@@ -463,7 +508,10 @@ const Properties = () => {
               <div className={s.errorContainer}>
                 <HiX size={48} className={s.errorIcon} />
                 <h3 className={s.errorTitle}>{error}</h3>
-                <button onClick={applyFilters} className={s.errorButton}>
+                <button
+                  onClick={() => fetchProperties(filters, page)}
+                  className={s.errorButton}
+                >
                   Thử lại
                 </button>
               </div>
@@ -479,22 +527,34 @@ const Properties = () => {
                 </button>
               </div>
             ) : (
-              <div
-                className={`${s.propertyList} ${
-                  viewMode === "grid" ? s.propertyListGrid : s.propertyListList
-                }`}
-              >
-                {properties
-                  .filter((p) => p)
-                  .map((p) => (
-                    <PropertyCard
-                      key={p._id}
-                      property={p}
-                      isWishlisted={wishlistedIds.includes(String(p._id))}
-                      onToggleWishlist={handleToggleWishlist}
-                    />
-                  ))}
-              </div>
+              <>
+                <div
+                  className={`${s.propertyList} ${
+                    viewMode === "grid" ? s.propertyListGrid : s.propertyListList
+                  }`}
+                >
+                  {properties
+                    .filter((p) => p)
+                    .map((p) => (
+                      <PropertyCard
+                        key={p._id}
+                        property={p}
+                        isWishlisted={wishlistedIds.includes(String(p._id))}
+                        onToggleWishlist={handleToggleWishlist}
+                      />
+                    ))}
+                </div>
+
+                {/* phân trang */}
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={goToPage}
+                  from={(page - 1) * PAGE_SIZE + 1}
+                  to={(page - 1) * PAGE_SIZE + properties.length}
+                  total={total}
+                />
+              </>
             )}
           </main>
         </div>

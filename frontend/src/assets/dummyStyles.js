@@ -1,5 +1,22 @@
 export const adminContactsStyles = {
-  container: "mb-10",
+  container: "mb-6",
+  tabs: "flex gap-2 overflow-x-auto pb-1 mb-5 -mx-1 px-1",
+  tab: (active) =>
+    `shrink-0 px-4 py-2 rounded-full text-sm font-semibold border transition-colors whitespace-nowrap cursor-pointer ${
+      active
+        ? "bg-primary text-white border-primary"
+        : "bg-white text-text-main border-[#e2e8f0] hover:border-primary"
+    }`,
+  tabCount: (active) =>
+    `ml-2 px-1.5 rounded-full text-xs ${active ? "bg-white/25" : "bg-[#f1f5f9] text-[#64748b]"}`,
+  errorText: "text-[#dc2626]",
+  statusBadge: (status) =>
+    `inline-flex items-center gap-1 text-[0.7rem] px-[0.6rem] py-[0.2rem] rounded-full font-bold ${
+      status === "resolved" ? "bg-[#f1f5f9] text-[#475569]" : "bg-[#fef3c7] text-[#92400e]"
+    }`,
+  resolvedNote: "flex items-center gap-1.5 mt-3 text-[0.8rem] text-[#15803d]",
+  resolveButton:
+    "inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#86efac] bg-[#f0fdf4] text-[#15803d] text-[0.85rem] font-semibold hover:bg-[#dcfce7] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait",
   heading: "text-[2rem] font-extrabold text-text-main mb-2",
   subheading: "text-text-muted text-[0.9rem]",
   card: "card-premium p-0 overflow-hidden",
@@ -17,7 +34,15 @@ export const adminContactsStyles = {
   nameBadgeContainer: "flex items-center gap-3 mb-1 flex-wrap",
   name: "text-[1.1rem] font-extrabold text-text-main",
   roleBadge: (role) =>
-    `text-[0.7rem] px-[0.6rem] py-[0.2rem] rounded-full font-bold uppercase ${role === "seller" ? "bg-[#dcfce7] text-[#166534]" : "bg-[#dbeafe] text-[#1e40af]"}`,
+    `text-[0.7rem] px-[0.6rem] py-[0.2rem] rounded-full font-bold ${role === "seller" ? "bg-[#dcfce7] text-[#166534]" : "bg-[#dbeafe] text-[#1e40af]"}`,
+  detailLink: "hover:text-primary hover:underline transition-colors",
+  copyButton:
+    "p-1 rounded-md text-text-muted hover:text-primary hover:bg-bg-alt transition-colors cursor-pointer",
+  actions: "flex flex-wrap gap-2 mt-3",
+  replyButton:
+    "inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-[0.85rem] font-semibold hover:bg-primary-dark transition-colors",
+  callButton:
+    "inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-white text-text-main text-[0.85rem] font-semibold hover:border-primary hover:text-primary transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait",
   contactDetails:
     "flex flex-col sm:flex-row gap-2 sm:gap-6 sm:flex-wrap mt-2 sm:mt-0",
   detailItem:
@@ -55,8 +80,9 @@ export const adminDashboardStyles = {
   serviceItem: "flex justify-between items-center",
   serviceName: "text-[0.875rem] font-semibold",
   statusContainer: "flex items-center gap-2",
-  statusDot: "w-2 h-2 rounded-full bg-[#10b981]",
-  statusText: "text-[0.8125rem] text-[#10b981] font-bold",
+  statusDot: (ok) => `w-2 h-2 rounded-full ${ok ? "bg-[#10b981]" : "bg-[#f59e0b]"}`,
+  statusText: (ok) => `text-[0.8125rem] font-bold ${ok ? "text-[#10b981]" : "text-[#d97706]"}`,
+  serviceHint: "block text-[0.75rem] font-normal text-[#94a3b8]",
 
   // Admin Tools card
   adminToolsCard: "card-premium p-6 bg-primary text-white",
@@ -64,7 +90,9 @@ export const adminDashboardStyles = {
   adminToolsDesc: "text-[0.8125rem] mb-6 opacity-90",
   adminToolsButtonsContainer: "flex flex-col gap-3",
   adminToolButton:
-    "btn bg-white/20 text-white w-full justify-start text-[0.875rem]",
+    "btn bg-white/20 hover:bg-white/30 text-white w-full justify-between text-[0.875rem] no-underline transition-colors",
+  adminToolCount:
+    "min-w-7 px-2 py-0.5 rounded-full bg-white text-primary text-[0.75rem] font-extrabold text-center",
 };
 
 export const adminInquiriesStyles = {
@@ -196,7 +224,7 @@ export const myInquiriesStyles = {
   bgTransparentHAuto: "bg-transparent h-auto w-full",
   containerFadeIn:
     "container fade-in w-full max-w-full px-4 sm:px-6 lg:px-8 overflow-hidden",
-  py12Pt12: "py-12 pt-12",
+  py12Pt12: "pb-12 pt-32 max-lg:pt-28",
   pt0: "pt-0",
   mb12: "mb-8 md:mb-12",
   heading: "text-[2rem] md:text-[2.5rem] mb-2 font-extrabold",
@@ -220,8 +248,6 @@ export const myInquiriesStyles = {
   titleText:
     "text-[1.1rem] md:text-[1.25rem] font-bold text-text-main break-words",
   badge: "badge shrink-0 px-2 py-1 text-xs whitespace-nowrap",
-  badgeRead: "bg-[#f1f5f9] text-[#64748b]",
-  badgeNew: "bg-[#eff6ff] text-[#2563eb]",
   buyerInfo:
     "flex flex-col md:flex-row gap-3 md:gap-6 mb-5 p-3 md:p-4 bg-[#f8fafc] rounded-xl flex-wrap w-full",
   infoItem:
@@ -464,7 +490,7 @@ export const myPropertiesStyles = {
   actionContainer: "flex-1 flex gap-2 items-center",
   selectWrapper: "flex-1 relative",
   select:
-    "w-full py-2.5 pr-8 pl-3 text-[0.8125rem] font-semibold rounded-lg border border-[#e2e8f0] bg-white appearance-none cursor-pointer outline-none",
+    "w-full py-2.5 px-3 text-[0.8125rem] font-semibold rounded-lg border border-[#e2e8f0] bg-white outline-none hover:border-[#cbd5e1] transition-colors",
   selectAvailable: "text-[#10b981]",
   selectSold: "text-[#ef4444]",
   selectIcon:
@@ -473,6 +499,83 @@ export const myPropertiesStyles = {
     "btn btn-outline p-2.5 text-[0.8125rem] flex items-center justify-center gap-1.5 border border-[#e2e8f0]",
   deleteButton:
     "btn p-2.5 text-[0.8125rem] bg-[#fff5f5] text-[#ef4444] border border-[#fee2e2] flex items-center justify-center gap-1.5 transition-colors hover:bg-[#fee2e2]",
+
+  // Thanh tìm kiếm theo khu vực
+  toolbar:
+    "card-premium p-4 mb-6 flex flex-col md:flex-row gap-3 md:items-center",
+  searchWrapper: "relative flex-1 min-w-0",
+  searchIcon:
+    "absolute left-3 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none",
+  searchInput:
+    "w-full py-2.5 pl-10 pr-9 rounded-lg border border-[#e2e8f0] bg-white text-[0.9375rem] outline-none focus:border-[#0d9488] focus:ring-2 focus:ring-[#0d9488]/20",
+  clearSearch:
+    "absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#94a3b8] hover:text-[#475569] hover:bg-[#f1f5f9]",
+  filterSelect:
+    "w-full md:w-52 py-2.5 px-3 rounded-lg border border-[#e2e8f0] bg-white text-[0.9375rem] text-text-main outline-none hover:border-[#cbd5e1] transition-colors",
+  resultInfo: "text-[0.875rem] text-text-muted mb-4",
+  resetButton: "text-[#0d9488] font-semibold hover:underline ml-1",
+
+  // Được quan tâm hôm nay
+  trendingCard: "card-premium p-5 sm:p-6 mb-6",
+  trendingHeader:
+    "flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5",
+  trendingTitle:
+    "flex items-center gap-2 text-lg font-extrabold text-text-main",
+  trendingFire:
+    "w-9 h-9 rounded-xl bg-[#fff7ed] text-[#f97316] flex items-center justify-center shrink-0",
+  trendingSubtitle: "text-[0.8125rem] text-text-muted mt-1",
+  trendingSummary: "flex items-center gap-2 flex-wrap",
+  trendingStat:
+    "flex items-center gap-2 px-3 py-2 rounded-xl bg-[#f0fdfa] text-[#0f766e] text-[0.8125rem]",
+  trendingStatValue: "text-base font-extrabold",
+  refreshButton:
+    "p-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] hover:text-[#0d9488] hover:border-[#0d9488] transition-colors disabled:opacity-50",
+  trendingList: "flex flex-col gap-2",
+  trendingItem:
+    "flex items-center gap-3 sm:gap-4 p-2.5 rounded-xl hover:bg-[#f8fafc] transition-colors",
+  rankBadge: (rank) =>
+    `w-7 h-7 rounded-full flex items-center justify-center text-[0.8125rem] font-extrabold shrink-0 ${
+      rank === 1
+        ? "bg-[#fef3c7] text-[#b45309]"
+        : rank === 2
+          ? "bg-[#e2e8f0] text-[#475569]"
+          : rank === 3
+            ? "bg-[#ffedd5] text-[#c2410c]"
+            : "bg-[#f1f5f9] text-[#94a3b8]"
+    }`,
+  trendingThumb:
+    "w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover bg-[#f1f5f9] shrink-0",
+  trendingInfo: "flex-1 min-w-0",
+  trendingName:
+    "font-bold text-[0.9375rem] text-text-main truncate hover:text-[#0d9488]",
+  trendingMeta: "text-[0.8125rem] text-text-muted truncate",
+  trendingBarTrack: "mt-2 h-1.5 rounded-full bg-[#f1f5f9] overflow-hidden max-w-[260px]",
+  trendingBar:
+    "h-full rounded-full bg-gradient-to-r from-[#2dd4bf] to-[#0d9488]",
+  trendingViews: "text-right shrink-0",
+  trendingViewsToday:
+    "flex items-center justify-end gap-1 font-extrabold text-[#0d9488] text-base",
+  trendingViewsTotal: "text-[0.75rem] text-[#94a3b8]",
+  soldTag:
+    "ml-2 px-1.5 py-0.5 rounded text-[0.6875rem] font-bold bg-[#fee2e2] text-[#ef4444] align-middle",
+  trendingEmpty:
+    "flex flex-col items-center text-center py-8 text-text-muted text-[0.875rem]",
+  trendingSkeleton: "h-[72px] rounded-xl bg-[#f1f5f9] animate-pulse",
+
+  // Ô "Xem thêm" nằm cuối lưới
+  seeMoreCard:
+    "group relative w-full min-h-[220px] max-sm:max-w-[420px] max-sm:mx-auto flex flex-col items-center justify-center gap-5 p-8 rounded-[1.25rem] border-2 border-dashed border-[#99f6e4] bg-gradient-to-br from-[#f0fdfa] via-white to-[#ecfeff] text-center cursor-pointer overflow-hidden transition-all duration-300 hover:border-[#0d9488] hover:-translate-y-2 hover:shadow-[0_12px_30px_rgba(13,148,136,0.15)]",
+  seeMoreGlow:
+    "pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#5eead4]/20 blur-2xl transition-transform duration-500 group-hover:scale-150",
+  seeMoreThumbs: "flex -space-x-4",
+  seeMoreThumb:
+    "w-14 h-14 rounded-full object-cover border-[3px] border-white shadow-md bg-[#e2e8f0] transition-transform duration-300 group-hover:-translate-y-1",
+  seeMoreIcon:
+    "w-14 h-14 rounded-full bg-[#0d9488] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(13,148,136,0.35)] transition-transform duration-300 group-hover:translate-x-1",
+  seeMoreTitle: "text-xl font-extrabold text-text-main",
+  seeMoreText: "text-[0.875rem] text-text-muted -mt-3",
+  seeMorePageTag:
+    "inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white border border-[#ccfbf1] text-[0.75rem] font-semibold text-[#0f766e]",
 };
 
 export const pendingApprovalStyles = {
@@ -528,6 +631,9 @@ export const sellerDashboardStyles = {
     "w-10 h-10 rounded-xl bg-[#f1f5f9] flex items-center justify-center mb-5",
   statTitle: "text-[#64748b] text-[0.8125rem] font-semibold mb-1",
   statValue: "text-[1.5rem] font-extrabold text-text-main",
+  statHint: "mt-1 text-[0.75rem] text-[#94a3b8]",
+  statCardLink:
+    "block no-underline transition-colors hover:border-[#0d6e59]/30 focus-visible:outline-2 focus-visible:outline-[#0d6e59]",
   listingsSection: "mb-12",
   listingsHeader: "flex justify-between items-center mb-6 flex-wrap gap-4",
   listingsTitle: "text-[1.25rem] font-extrabold text-text-main",
@@ -564,7 +670,7 @@ export const sellerDashboardStyles = {
   inquiryRight: "text-right flex-1",
   inquiryDate: "text-[0.7rem] text-[#94a3b8] mb-0.5",
   inquiryStatus: (status) =>
-    `py-0.5 px-2 rounded-full text-[0.65rem] font-extrabold uppercase ${status === "read" ? "bg-[#f1f5f9] text-[#64748b]" : "bg-primary-light text-primary"}`,
+    `py-0.5 px-2 rounded-full text-[0.65rem] font-extrabold uppercase ${inquiryStatusTone(status)}`,
   noInquiries: "text-center text-[#64748b] p-4",
   tipsWidget:
     "bg-white rounded-3xl border border-[#f1f5f9] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]",
@@ -633,10 +739,11 @@ export const chatMessagesStyles = {
     "self-end bg-[#00b4d8] text-white rounded-br-[4px] shadow-[0_4px_12px_rgba(0,180,216,0.2)]",
   messageOther:
     "self-start bg-white text-[#334155] rounded-bl-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.05)]",
-  messageContent: "flex items-start gap-2 break-all",
+  // overflow-wrap:anywhere chỉ ngắt chuỗi dài không có dấu cách (link…); chữ thường xuống dòng theo từ
+  messageContent: "flex items-start gap-2 [overflow-wrap:anywhere]",
   messageImageWrapper: "mb-2 rounded-lg overflow-hidden",
   messageImage: "w-full max-h-[200px] object-cover block",
-  messageText: "break-all",
+  messageText: "min-w-0 whitespace-pre-wrap [overflow-wrap:anywhere]",
   deleteMessageButton:
     "bg-transparent border-none text-white/60 cursor-pointer p-0.5 rounded transition-all duration-200 mt-0.5 hover:text-white hover:bg-white/20",
   messageTime: "text-[0.75rem] mt-1.5 opacity-70 block",
@@ -913,7 +1020,8 @@ export const landingPageStyles = {
 export const propertiesStyles = {
   // Page container
   pageContainer: "bg-[#f8fafc] min-h-screen pb-16 pt-32 max-lg:pt-28",
-  container: "container",
+  // rộng hơn container mặc định (1280px) để đủ chỗ 4 thẻ/hàng + 5 thẻ gợi ý trên màn hình lớn
+  container: "container max-w-[1600px]",
 
   // Mobile filter button
   mobileFilterButtonWrapper: "mobile-filter-btn hidden mb-6 max-[1024px]:block",
@@ -922,11 +1030,12 @@ export const propertiesStyles = {
 
   // Layout grid
   layout:
-    "properties-layout grid grid-cols-[minmax(280px,300px)_1fr] gap-8 max-[1024px]:grid-cols-1",
+    // minmax(0,1fr): nội dung cuộn ngang (mục gợi ý) không kéo giãn cột ra ngoài màn hình
+    "properties-layout grid grid-cols-[minmax(260px,280px)_minmax(0,1fr)] gap-8 max-[1024px]:grid-cols-1",
 
   // Sidebar
   sidebar:
-    "filters-sidebar scrollbar-hide bg-white rounded-[1.5rem] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] max-h-[calc(100vh-120px)] overflow-y-auto sticky top-[100px] border border-[#f1f5f9] z-[90] max-[1024px]:fixed max-[1024px]:max-h-screen max-[1024px]:top-0 max-[1024px]:bottom-0 max-[1024px]:w-full max-[1024px]:max-w-[350px] max-[1024px]:rounded-none max-[1024px]:transition-[left] max-[1024px]:duration-300 max-[1024px]:ease max-[1024px]:z-[2005]",
+    "filters-sidebar scrollbar-hide bg-white rounded-[1.5rem] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] max-h-[calc(100vh-120px)] overflow-y-auto sticky top-[100px] self-start border border-[#f1f5f9] z-[90] max-[1024px]:fixed max-[1024px]:max-h-screen max-[1024px]:top-0 max-[1024px]:bottom-0 max-[1024px]:w-full max-[1024px]:max-w-[350px] max-[1024px]:rounded-none max-[1024px]:transition-[left] max-[1024px]:duration-300 max-[1024px]:ease max-[1024px]:z-[2005]",
   sidebarVisible: "max-[1024px]:left-0",
   sidebarHidden: "max-[1024px]:-left-full",
   sidebarHeader: "flex justify-between items-center mb-8",
@@ -962,7 +1071,7 @@ export const propertiesStyles = {
   bhkButtonInactive: "border border-[#e2e8f0] bg-white text-[#64748b]",
 
   // Main content
-  mainContent: "", // no extra classes
+  mainContent: "min-w-0",
   contentHeader:
     "content-header bg-white py-5 px-8 rounded-[1.25rem] mb-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex justify-between items-center border border-[#f1f5f9] max-[1024px]:p-4 max-[1024px]:flex-col max-[1024px]:gap-4 max-[1024px]:items-start",
   resultCount: "text-[#64748b] text-[0.9375rem]",
@@ -977,10 +1086,10 @@ export const propertiesStyles = {
   sortControl: "sort-control flex items-center gap-2",
   sortLabel: "text-sm text-[#64748b]",
   sortSelect:
-    "py-2 px-4 bg-white border border-[#e2e8f0] rounded-xl text-sm font-semibold cursor-pointer outline-none text-text-main appearance-auto",
+    "min-w-[190px] py-2 px-4 bg-white border border-[#e2e8f0] rounded-xl text-sm font-semibold outline-none text-text-main hover:border-[#cbd5e1] transition-colors",
 
   // Skeleton loading
-  skeletonGrid: "grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6",
+  skeletonGrid: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6",
   skeletonCard: "skeleton h-[400px] rounded-[1.25rem]",
 
   // Error state
@@ -1001,9 +1110,22 @@ export const propertiesStyles = {
 
   // Property list
   propertyList: "property-list grid gap-6",
+  // 4 thẻ/hàng trên màn hình lớn, giảm dần trên màn hình nhỏ
   propertyListGrid:
-    "grid-cols-[repeat(auto-fill,minmax(280px,1fr))] max-sm:grid-cols-1 max-sm:justify-items-center",
+    "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4",
   propertyListList: "grid-cols-1",
+
+  // Phân trang
+  pagination: "flex flex-col items-center gap-3 mt-12",
+  paginationNav: "flex items-center gap-1 sm:gap-2",
+  pageButton: (active) =>
+    `w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[15px] border-none cursor-pointer transition-colors duration-200 disabled:opacity-35 disabled:cursor-not-allowed ${
+      active
+        ? "bg-[#0d9488] text-white font-semibold shadow-[0_4px_12px_rgba(13,148,136,0.3)]"
+        : "bg-transparent text-[#334155] font-medium hover:bg-[#e2e8f0] disabled:hover:bg-transparent"
+    }`,
+  pageEllipsis: "w-6 sm:w-8 text-center text-[#94a3b8] select-none",
+  paginationInfo: "text-sm text-[#64748b]",
 
   // Mobile overlay
   mobileOverlay: "fixed inset-0 bg-black/50 z-[2004]",
@@ -1078,7 +1200,7 @@ export const propertyDetailsStyles = {
     "py-4 px-2 bg-[#f8fafc] rounded-2xl border border-[#f1f5f9] text-center min-w-0",
   statIcon: "text-primary mb-1.5 mx-auto",
   statValue:
-    "font-extrabold text-[0.9rem] text-text-main capitalize break-words whitespace-normal leading-snug",
+    "font-extrabold text-[0.9rem] text-text-main break-words whitespace-normal leading-snug",
   statLabel: "text-[0.6rem] text-[#94a3b8] uppercase font-bold tracking-widest",
   descriptionSection: "mb-10 min-w-0",
   sectionTitle: "text-xl font-bold mb-4",
@@ -1139,7 +1261,7 @@ export const propertyDetailsStyles = {
   detailLabel:
     "text-[#64748b] text-[0.875rem] min-w-0 break-words whitespace-normal",
   detailValue:
-    "text-text-main font-semibold capitalize text-right max-w-[60%] break-words whitespace-normal",
+    "text-text-main font-semibold text-right max-w-[60%] break-words whitespace-normal",
   similarSection: "mt-16",
   similarHeader: "flex justify-between items-end mb-8 flex-wrap gap-4",
   similarTitle: "text-[1.75rem] font-extrabold mb-1",
@@ -1338,11 +1460,13 @@ export const adminSidebarStyles = {
 };
 
 export const dashboardNavbarStyles = {
+  // mobile: nút menu + logo + chuông; desktop (sidebar cố định): chỉ còn chuông thông báo ở góc phải
   header:
-    "h-[64px] bg-white/70 backdrop-blur-[12px] border-b border-white/20 flex items-center px-4 sticky top-0 z-[900] w-full gap-4 md:hidden",
+    "h-[64px] md:h-14 bg-white/70 backdrop-blur-[12px] border-b border-white/20 md:border-[#e2e8f0] flex items-center px-4 md:px-8 sticky top-0 z-[900] w-full gap-4",
   menuButton:
-    "bg-primary/5 border-none text-primary cursor-pointer flex items-center justify-center w-10 h-10 rounded-xl shrink-0",
-  logoContainer: "flex items-center overflow-hidden",
+    "bg-primary/5 border-none text-primary cursor-pointer flex items-center justify-center w-10 h-10 rounded-xl shrink-0 md:hidden",
+  logoContainer: "flex items-center overflow-hidden md:hidden",
+  actions: "ml-auto flex items-center gap-2",
 };
 
 export const sellerLayoutStyles = {
@@ -1508,4 +1632,269 @@ export const propertyCardStyles = {
 
   // Custom actions container
   actionsContainer: "px-5 pb-5 flex gap-2 relative z-20",
+};
+
+export const aiChatStyles = {
+  // Nút nổi
+  fab:
+    "fixed bottom-6 right-6 z-[2090] flex items-center gap-2.5 h-14 pl-1.5 pr-5 rounded-full bg-gradient-to-r from-[#0d9488] to-[#0891b2] text-white font-bold shadow-[0_10px_30px_rgba(13,148,136,0.4)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_36px_rgba(13,148,136,0.5)] max-sm:pr-1.5",
+  fabLabel: "max-sm:hidden",
+  // icon robot: vòng gradient xoay quanh vòng tròn trắng, sao lấp lánh, vòng sáng "thở"
+  fabIconWrap: "relative w-11 h-11 shrink-0",
+  fabRing:
+    "ai-ring absolute -inset-[3px] rounded-full bg-[conic-gradient(from_0deg,#5eead4,#ffffff,#67e8f9,#ffffff,#5eead4)] opacity-90",
+  fabIcon:
+    "relative w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.15)] overflow-hidden",
+  fabSparkle:
+    "ai-twinkle absolute -top-1.5 -right-1 text-[13px] leading-none text-[#fde047] drop-shadow-[0_0_4px_rgba(253,224,71,0.9)] pointer-events-none",
+  fabPulse:
+    "ai-halo absolute inset-0 rounded-full bg-[#5eead4] pointer-events-none",
+
+  // Khung chat
+  panel:
+    "fixed z-[2100] bottom-6 right-6 flex flex-col bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)] overflow-hidden transition-[width,height] duration-300 animate-[aiPanelIn_200ms_ease-out] max-sm:inset-0 max-sm:w-full max-sm:h-full max-sm:max-h-none max-sm:rounded-none",
+  // Kích thước thường và khi phóng to (nút ⤢ trên header)
+  panelNormal: "w-[480px] h-[760px] max-h-[calc(100vh-48px)]",
+  panelExpanded:
+    "w-[min(860px,calc(100vw-48px))] h-[calc(100vh-48px)]",
+  header:
+    "flex items-center gap-3 px-4 py-3.5 bg-gradient-to-r from-[#0d9488] to-[#0891b2] text-white shrink-0",
+  headerAvatar:
+    "w-11 h-11 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.12)]",
+  headerTitle: "font-extrabold text-[1rem] leading-tight flex items-center gap-1.5",
+  aiBadge:
+    "px-1.5 py-px rounded-md bg-white/25 text-[0.625rem] font-extrabold tracking-wider",
+  headerSubtitle: "text-[0.75rem] text-white/80 flex items-center gap-1.5",
+  onlineDot: "w-1.5 h-1.5 rounded-full bg-[#86efac]",
+  headerButton:
+    "p-2 rounded-lg text-white/85 hover:text-white hover:bg-white/15 transition-colors",
+
+  body: "flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-[#f8fafc]",
+
+  // Màn hình chào
+  welcome: "flex flex-col items-center text-center pt-4",
+  welcomeIcon:
+    "w-20 h-20 rounded-3xl bg-white border border-[#ccfbf1] flex items-center justify-center mb-3 shadow-[0_8px_20px_rgba(13,148,136,0.3)]",
+  welcomeTitle: "font-extrabold text-text-main text-lg",
+  welcomeText: "text-[0.85rem] text-text-muted mt-1 mb-4 max-w-[300px]",
+  chips: "flex flex-wrap justify-center gap-2",
+  chip:
+    "px-3 py-1.5 rounded-full bg-white border border-[#ccfbf1] text-[0.8rem] text-[#0f766e] font-semibold hover:bg-[#f0fdfa] hover:border-[#5eead4] transition-colors",
+
+  // Tin nhắn
+  userRow: "flex justify-end",
+  userBubble:
+    "max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-br-md bg-[#0d9488] text-white text-[0.9rem] whitespace-pre-line break-words",
+  botRow: "flex gap-2 items-start",
+  botAvatar:
+    "w-8 h-8 rounded-lg bg-white border border-[#e2e8f0] flex items-center justify-center shrink-0 mt-0.5",
+  botContent: "flex-1 min-w-0 space-y-2",
+  botBubble:
+    "inline-block max-w-full px-3.5 py-2.5 rounded-2xl rounded-tl-md bg-white border border-[#e2e8f0] text-[0.9rem] text-[#1e293b] whitespace-pre-line break-words leading-relaxed",
+  status: "flex items-center gap-2 text-[0.8rem] text-text-muted py-1",
+  typingDots: "flex gap-1",
+  typingDot: "w-1.5 h-1.5 rounded-full bg-[#14b8a6] animate-bounce",
+  errorBox:
+    "flex items-start gap-2 px-3 py-2 rounded-xl bg-[#fef2f2] border border-[#fecaca] text-[0.8rem] text-[#b91c1c]",
+
+  // Thẻ BĐS trong chat
+  cards: "flex flex-col gap-2",
+  card:
+    "flex gap-3 p-2 rounded-xl bg-white border border-[#e2e8f0] hover:border-[#5eead4] hover:shadow-[0_4px_14px_rgba(13,148,136,0.12)] transition-all",
+  cardImage: "w-20 h-16 rounded-lg object-cover bg-[#f1f5f9] shrink-0",
+  cardInfo: "flex-1 min-w-0",
+  cardTitle: "text-[0.825rem] font-bold text-text-main line-clamp-2 leading-snug",
+  cardPrice: "text-[0.825rem] font-extrabold text-[#0d9488] mt-0.5",
+  cardMeta: "text-[0.725rem] text-text-muted truncate flex items-center gap-1",
+
+  // Chân khung chat
+  footer: "shrink-0 border-t border-[#e2e8f0] bg-white px-3 pt-2.5 pb-3",
+  quota: "flex items-center justify-between gap-2 text-[0.75rem] text-text-muted mb-2 px-1",
+  quotaLink: "text-[#0d9488] font-semibold hover:underline",
+  inputRow:
+    "flex items-end gap-2 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 focus-within:border-[#0d9488] focus-within:ring-2 focus-within:ring-[#0d9488]/15 transition-all",
+  textarea:
+    "flex-1 resize-none bg-transparent outline-none text-[0.95rem] text-text-main placeholder:text-[#94a3b8] min-h-[48px] max-h-40 py-1.5",
+  sendButton:
+    "w-10 h-10 rounded-lg bg-[#0d9488] text-white flex items-center justify-center shrink-0 transition-colors hover:bg-[#0f766e] disabled:bg-[#cbd5e1] disabled:cursor-not-allowed",
+  limitBox:
+    "rounded-xl bg-gradient-to-br from-[#f0fdfa] to-[#ecfeff] border border-[#ccfbf1] p-4 text-center",
+  limitTitle: "font-bold text-text-main text-[0.9rem]",
+  limitText: "text-[0.8rem] text-text-muted mt-1 mb-3",
+  limitButton:
+    "inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0d9488] text-white text-[0.85rem] font-bold hover:bg-[#0f766e] transition-colors",
+  disclaimer: "text-center text-[0.675rem] text-[#94a3b8] mt-2",
+  credit: "underline decoration-dotted hover:text-[#64748b]",
+};
+
+export const recommendationStyles = {
+  section:
+    "relative mb-8 rounded-2xl border border-[#ccfbf1] bg-gradient-to-br from-[#f0fdfa] via-white to-[#ecfeff] p-5 sm:p-6",
+  header: "flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4",
+  badge:
+    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-[#0d9488] to-[#0891b2] text-white text-[0.75rem] font-bold uppercase tracking-wide shadow-[0_4px_12px_rgba(13,148,136,0.3)]",
+  basedOn: "text-[0.825rem] text-text-muted mt-2",
+  basedOnQuery: "font-semibold text-[#0f766e]",
+  dismiss:
+    "self-start text-[0.8rem] text-[#64748b] hover:text-[#ef4444] font-semibold transition-colors",
+  // Màn hình lớn: đủ 5 thẻ trên 1 hàng (lưới 5 cột). Nhỏ hơn: cuộn ngang trong khung, không tràn trang.
+  scroller:
+    "flex gap-4 overflow-x-auto pt-2 pb-3 -mx-1 px-1 snap-x snap-mandatory [scrollbar-width:thin] min-[1440px]:grid min-[1440px]:grid-cols-5 min-[1440px]:overflow-visible min-[1440px]:mx-0 min-[1440px]:px-0",
+  item: "relative snap-start shrink-0 w-[260px] min-[1440px]:w-auto min-[1440px]:min-w-0",
+  rank:
+    "absolute -top-2 -left-2 z-20 w-7 h-7 rounded-full bg-[#f59e0b] text-white text-[0.75rem] font-extrabold flex items-center justify-center shadow-md",
+  skeleton: "shrink-0 w-[260px] min-[1440px]:w-auto h-[380px] rounded-[1.25rem] bg-[#e2e8f0]/60 animate-pulse",
+  badgeFeatured:
+    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-[#f59e0b] to-[#ea580c] text-white text-[0.75rem] font-bold uppercase tracking-wide shadow-[0_4px_12px_rgba(234,88,12,0.25)]",
+  // lý do nổi bật, đè lên ảnh ngay dưới nhãn "Có sẵn"
+  highlight:
+    "absolute top-[52px] left-3 right-3 z-20 px-2.5 py-1 rounded-lg bg-[#0f172a]/75 backdrop-blur-sm text-white text-[0.7rem] font-semibold leading-snug pointer-events-none",
+  askTile:
+    "shrink-0 w-[260px] min-[1440px]:w-auto min-h-[380px] snap-start flex flex-col items-center justify-center gap-3 text-center rounded-[1.25rem] border-2 border-dashed border-[#99f6e4] bg-white/70 px-5 py-8 hover:border-primary hover:bg-white transition-colors cursor-pointer",
+  askIcon: "w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center",
+  askTitle: "font-bold text-text-main",
+  askText: "text-[0.8rem] text-text-muted leading-relaxed",
+  askCta: "text-[0.85rem] font-bold text-primary",
+};
+
+// Màu nhãn trạng thái yêu cầu tư vấn (seller) — dùng chung cho trang Khách hàng và dashboard
+const INQUIRY_STATUS_TONES = {
+  new: "bg-[#eff6ff] text-[#2563eb]",
+  contacted: "bg-[#fef3c7] text-[#b45309]",
+  viewing_scheduled: "bg-[#ede9fe] text-[#6d28d9]",
+  won: "bg-[#dcfce7] text-[#15803d]",
+  lost: "bg-[#f1f5f9] text-[#64748b]",
+};
+export const inquiryStatusTone = (status) =>
+  INQUIRY_STATUS_TONES[status] || INQUIRY_STATUS_TONES.new;
+
+// Nhãn trạng thái phía buyer
+const BUYER_INQUIRY_TONES = {
+  sent: "bg-[#eff6ff] text-[#2563eb]",
+  seen: "bg-[#f0fdfa] text-[#0f766e]",
+  contacted: "bg-[#fef3c7] text-[#b45309]",
+  viewing_scheduled: "bg-[#ede9fe] text-[#6d28d9]",
+  closed: "bg-[#f1f5f9] text-[#64748b]",
+};
+export const buyerInquiryTone = (status) =>
+  BUYER_INQUIRY_TONES[status] || BUYER_INQUIRY_TONES.sent;
+
+export const sellerInquiriesStyles = {
+  page: "w-full max-w-[1400px] mx-auto",
+  header: "mb-6",
+  title: "text-[1.5rem] sm:text-[1.75rem] font-extrabold text-text-main mb-1",
+  subtitle: "text-[#64748b] text-[0.9375rem]",
+
+  statsGrid: "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6",
+  statCard:
+    "bg-white p-4 sm:p-5 rounded-2xl border border-[#f1f5f9] shadow-[0_4px_20px_rgba(0,0,0,0.02)] min-w-0",
+  statLabel:
+    "flex items-center gap-1.5 text-[#64748b] text-[0.75rem] sm:text-[0.8125rem] font-semibold mb-1",
+  statValue: (danger) =>
+    `text-[1.25rem] sm:text-[1.5rem] font-extrabold ${danger ? "text-[#dc2626]" : "text-text-main"}`,
+  statHint: "text-[0.7rem] text-[#94a3b8] mt-0.5",
+
+  tabs: "flex gap-2 overflow-x-auto pb-1 mb-4 -mx-1 px-1",
+  tab: (active) =>
+    `shrink-0 px-4 py-2 rounded-full text-sm font-semibold border transition-colors whitespace-nowrap ${
+      active
+        ? "bg-primary text-white border-primary"
+        : "bg-white text-text-main border-[#e2e8f0] hover:border-primary"
+    }`,
+  tabCount: (active) =>
+    `ml-2 px-1.5 rounded-full text-xs ${active ? "bg-white/25" : "bg-[#f1f5f9] text-[#64748b]"}`,
+
+  filters: "flex flex-col sm:flex-row gap-3 mb-5",
+  searchWrapper: "relative flex-1 min-w-0",
+  searchIcon: "absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8]",
+  searchInput:
+    "w-full py-2.5 pr-4 pl-10 rounded-xl border border-[#e2e8f0] bg-white outline-none text-[0.875rem] focus:border-primary",
+  propertySelect:
+    "w-full sm:w-[280px] py-2.5 px-4 rounded-xl border border-[#e2e8f0] bg-white text-[0.875rem]",
+
+  layout: "grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_400px] gap-5 items-start",
+  list: "flex flex-col gap-3 min-w-0",
+  row: (selected) =>
+    `w-full text-left flex gap-3 sm:gap-4 p-4 rounded-2xl border bg-white transition-all ${
+      selected
+        ? "border-primary shadow-[0_0_0_3px_rgba(13,148,136,0.12)]"
+        : "border-[#f1f5f9] hover:border-[#cbd5e1] shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
+    }`,
+  avatar:
+    "w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary font-extrabold flex items-center justify-center uppercase",
+  rowBody: "flex-1 min-w-0 flex flex-col gap-1",
+  rowTop: "flex items-start justify-between gap-3",
+  rowName: "flex items-center gap-2 font-bold text-text-main text-[0.9375rem] min-w-0 truncate",
+  unreadDot: "w-2 h-2 rounded-full bg-[#2563eb] shrink-0",
+  statusBadge: (status) =>
+    `shrink-0 px-2 py-0.5 rounded-full text-[0.7rem] font-bold whitespace-nowrap ${inquiryStatusTone(status)}`,
+  rowProperty: "text-[0.8125rem] text-primary font-semibold truncate",
+  rowMessage: "text-[0.8125rem] text-[#475569] line-clamp-2 break-words",
+  rowMeta: "flex items-center gap-1.5 text-[0.75rem] text-[#94a3b8] flex-wrap",
+  overdue: "text-[#dc2626] font-semibold",
+
+  empty: "card-premium py-14 px-6 text-center text-[#64748b]",
+  emptyIcon:
+    "w-14 h-14 rounded-full bg-[#f8fafc] text-[#94a3b8] flex items-center justify-center mx-auto mb-4",
+  emptyLink: "mt-3 text-primary font-semibold text-sm hover:underline",
+  errorBox: "card-premium p-6 text-center text-[#dc2626]",
+  loaderBox: "flex justify-center py-16",
+
+  // Khung chi tiết: desktop dính bên phải, mobile là lớp phủ toàn màn hình (portal)
+  aside:
+    "hidden lg:block sticky top-0 max-h-[calc(100vh-7rem)] overflow-y-auto bg-white rounded-2xl border border-[#f1f5f9] shadow-[0_4px_20px_rgba(0,0,0,0.04)]",
+  asidePlaceholder: "p-10 text-center text-[#94a3b8] text-sm",
+  mobileSheet: "fixed inset-0 z-[2200] bg-white overflow-y-auto sheet-in",
+
+  detail: "p-5 sm:p-6 flex flex-col gap-5",
+  detailHeader: "flex items-start justify-between gap-3",
+  detailName: "text-[1.125rem] font-extrabold text-text-main break-words",
+  detailSub: "text-[0.75rem] text-[#94a3b8] mt-0.5",
+  closeBtn: "p-1.5 rounded-lg text-[#94a3b8] hover:bg-[#f1f5f9] shrink-0",
+  contactList: "flex flex-col gap-2 text-[0.875rem]",
+  contactItem: "flex items-center gap-2 text-[#475569] min-w-0 break-all hover:text-primary",
+  propertyBox:
+    "flex gap-3 p-3 rounded-xl bg-[#f8fafc] border border-[#f1f5f9] hover:border-primary transition-colors no-underline",
+  propertyImg: "w-16 h-16 rounded-lg object-cover shrink-0 bg-[#e2e8f0]",
+  propertyInfo: "min-w-0 flex flex-col gap-0.5",
+  propertyTitle: "font-bold text-[0.875rem] text-text-main line-clamp-2",
+  propertyPrice: "text-[0.8125rem] text-primary font-bold",
+  propertySold: "text-[0.7rem] font-bold text-[#dc2626] uppercase",
+  sectionLabel: "text-[0.75rem] font-bold uppercase tracking-wide text-[#94a3b8] mb-2",
+  messageBox:
+    "text-[0.9rem] text-[#334155] whitespace-pre-line break-words pl-3 border-l-[3px] border-[#e2e8f0]",
+  statusGrid: "flex flex-wrap gap-2",
+  statusChip: (status, active) =>
+    `px-3 py-1.5 rounded-full text-[0.8125rem] font-semibold border transition-colors disabled:opacity-60 ${
+      active
+        ? `${inquiryStatusTone(status)} border-current`
+        : "bg-white text-[#475569] border-[#e2e8f0] hover:border-primary hover:text-primary"
+    }`,
+  lostInfo: "mt-2 text-[0.8125rem] text-[#64748b] bg-[#f8fafc] rounded-lg px-3 py-2",
+  noteArea:
+    "w-full min-h-[96px] p-3 rounded-xl border border-[#e2e8f0] text-[0.875rem] outline-none focus:border-primary resize-y",
+  noteFooter: "flex items-center justify-between mt-1.5 text-[0.75rem] text-[#94a3b8]",
+  noteSave: "text-primary font-semibold hover:underline disabled:opacity-50 disabled:no-underline",
+  actions: "grid grid-cols-2 gap-2",
+  btnChat:
+    "btn py-2.5 justify-center bg-[#2563eb] text-white hover:bg-[#1d4ed8] flex items-center gap-2 text-sm rounded-xl font-semibold disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#2563eb]",
+  btnOutline: "btn btn-outline py-2.5 justify-center flex items-center gap-2 text-sm",
+  timeline: "flex flex-col gap-3 border-l-2 border-[#f1f5f9] ml-1.5 pl-4",
+  timelineItem: "relative text-[0.8125rem]",
+  timelineDot:
+    "absolute -left-[1.4rem] top-1 w-2.5 h-2.5 rounded-full bg-white border-2 border-primary",
+  timelineLabel: "font-semibold text-text-main",
+  timelineTime: "text-[0.75rem] text-[#94a3b8]",
+
+  modalOverlay:
+    "fixed inset-0 z-[2300] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4",
+  modal: "w-full max-w-md bg-white rounded-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto",
+  modalTitle: "text-lg font-bold text-text-main",
+  modalSub: "text-sm text-[#64748b] line-clamp-1 mb-4",
+  reasonList: "flex flex-col gap-2 mb-4",
+  reasonOption: (active) =>
+    `flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer text-sm ${
+      active ? "border-primary bg-primary-light text-text-main" : "border-[#e2e8f0] text-[#475569]"
+    }`,
+  modalActions: "flex justify-end gap-2 mt-5",
 };

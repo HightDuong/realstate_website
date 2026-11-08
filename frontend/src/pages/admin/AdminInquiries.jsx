@@ -74,7 +74,7 @@ const AdminInquiries = () => {
                 </div>
                 <div className={s.propertyTextWrapper}>
                   <div className={s.propertyTitle}>
-                    {inq.property?.title || "Unknown property"}
+                    {inq.property?.title || "Bất động sản không xác định"}
                   </div>
                   <div className={s.propertyId}>
                     ID BĐS : {inq.property?._id}
@@ -83,18 +83,18 @@ const AdminInquiries = () => {
               </div>
               <div className={s.dateWrapper}>
                 <HiOutlineCalendar className={s.dateIcon} />{" "}
-                {new Date(inq.createdAt).toLocaleDateString()}
+                {new Date(inq.createdAt).toLocaleDateString("vi-VN")}
               </div>
             </div>
             <div className={s.detailsGrid}>
               <div className={s.detailCard}>
-                <div className={s.detailLabel}>Thông tin Buyer</div>
+                <div className={s.detailLabel}>Thông tin người mua</div>
                 <div className={s.detailName}>{inq.buyer?.name}</div>
                 <div className={s.detailEmail}>{inq.buyer?.email}</div>
               </div>
 
               <div className={s.detailCard}>
-                <div className={s.detailLabel}>Thông tin Seller</div>
+                <div className={s.detailLabel}>Thông tin người bán</div>
                 <div className={s.detailName}>{inq.seller?.name}</div>
                 <div className={s.detailEmail}>{inq.seller?.email}</div>
               </div>

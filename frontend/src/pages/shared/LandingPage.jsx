@@ -25,6 +25,7 @@ import axios from "axios";
 import API_URL from "../../config";
 import banner from "../../assets/bannerimage.png";
 import PropertyCard from "../../components/common/PropertyCard";
+import Select from "../../components/common/Select";
 import logo from "../../assets/hexagonlogo1.png";
 
 const LandingPage = () => {
@@ -171,7 +172,7 @@ const LandingPage = () => {
   const fetchProperties = async (search = "") => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}api/property?city=${search}`);
+      const res = await axios.get(`${API_URL}api/property?city=${encodeURIComponent(search)}`);
       // setProperties(res.data.properties || res.data || []);
       // console.log("Dữ liệu API trả về:", res.data); // THÊM DÒNG NÀY
       setProperties(
@@ -183,7 +184,7 @@ const LandingPage = () => {
       );
       setError(null);
     } catch (error) {
-      setError("Failed to load properties.Pls try again!");
+      setError("Không thể tải danh sách bất động sản. Vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
@@ -199,13 +200,13 @@ const LandingPage = () => {
 
   const categories = [
     {
-      name: "Modern Flats",
+      name: "Căn hộ hiện đại",
       count: propertyCounts.flat || 0,
       icon: <HiOfficeBuilding size={32} />,
       type: "flat",
     },
     {
-      name: "Luxury Villas",
+      name: "Biệt thự cao cấp",
       count: propertyCounts.villa || 0,
       icon: <HiHome size={32} />,
       type: "villa",
@@ -217,7 +218,7 @@ const LandingPage = () => {
       type: "penthouse",
     },
     {
-      name: "Commercial",
+      name: "Mặt bằng thương mại",
       count: propertyCounts.commercial || 0,
       icon: <HiOfficeBuilding size={32} />,
       type: "commercial",
@@ -226,23 +227,23 @@ const LandingPage = () => {
 
   const features = [
     {
-      title: "Verified Trust",
-      desc: "Every listing is strictly audited for ownership, condition, and legality.",
+      title: "Uy tín đã kiểm chứng",
+      desc: "Mọi tin đăng đều được kiểm duyệt chặt chẽ về quyền sở hữu, hiện trạng và tính pháp lý.",
       icon: <HiShieldCheck size={24} />,
     },
     {
-      title: "Smart Search",
-      desc: "Our AI-driven algorithms help you find the best matches based on preferences.",
+      title: "Tìm kiếm thông minh",
+      desc: "Thuật toán AI giúp bạn tìm ra những lựa chọn phù hợp nhất dựa trên nhu cầu cá nhân.",
       icon: <HiLightningBolt size={24} />,
     },
     {
-      title: "Best Value",
-      desc: "Direct-from-owner listings and zero-commission options to ensure competitive prices.",
+      title: "Giá trị tốt nhất",
+      desc: "Tin đăng trực tiếp từ chủ sở hữu, không qua trung gian, đảm bảo mức giá cạnh tranh.",
       icon: <HiCurrencyDollar size={24} />,
     },
     {
-      title: "Virtual Tours",
-      desc: "High-definition 3D tours allow you to experience the property from home.",
+      title: "Tham quan ảo",
+      desc: "Trải nghiệm bất động sản qua tour 3D độ nét cao ngay tại nhà.",
       icon: <HiVideoCamera size={24} />,
     },
   ];
@@ -286,17 +287,19 @@ const LandingPage = () => {
               </div>
               <div className={s.flexCol}>
                 <label className={s.labelSmall}>Loại bất động sản</label>
-                <select
+                <Select
                   value={propertyType}
                   onChange={(e) => setPropertyType(e.target.value)}
-                  className={`${s.inputTransparent} cursor-pointer`}
-                >
-                  <option value="Select Type">Chọn loại</option>
-                  <option value="flat">Flat/Căn hộ</option>
-                  <option value="villa">Biệt thự/Nhà ở</option>
-                  <option value="penthouse">Penthouse</option>
-                  <option value="commercial">Văn phòng & cửa hàng</option>
-                </select>
+                  className={s.inputTransparent}
+                  ariaLabel="Loại bất động sản"
+                  options={[
+                    { value: "Select Type", label: "Chọn loại" },
+                    { value: "flat", label: "Căn hộ / Chung cư" },
+                    { value: "villa", label: "Biệt thự / Nhà ở" },
+                    { value: "penthouse", label: "Penthouse" },
+                    { value: "commercial", label: "Văn phòng & cửa hàng" },
+                  ]}
+                />
               </div>
             </div>
             <button type="submit" className={s.searchButton}>

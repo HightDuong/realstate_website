@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { chatMessagesStyles as s } from "../../assets/dummyStyles";
 import { useAuth } from "../../context/AuthContext";
 import { useChat } from "../../context/ChatContext";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import API_URL from "../../config";
 import Navbar from "../../components/common/Navbar";
@@ -12,6 +12,16 @@ import {
   HiOutlineTrash,
   HiPaperAirplane,
 } from "react-icons/hi";
+
+// Cập nhật danh sách hội thoại khi có tin mới: nối tin vào cuối (để xem trước đúng) và đưa hội thoại lên đầu
+const withNewMessage = (chatId, message) => (prev) => {
+  const target = prev.find((c) => c._id === chatId);
+  if (!target) return prev;
+  return [
+    { ...target, messages: [...(target.messages || []), message] },
+    ...prev.filter((c) => c._id !== chatId),
+  ];
+};
 
 const ChatMessages = () => {
   const { user, token } = useAuth();
@@ -70,7 +80,7 @@ const ChatMessages = () => {
           setMessages(res.data || []);
           joinChat(activeChat._id);
           scrollToBottom();
-        } catch (error) {
+        } catch {
           console.error("Không thể tải tin nhắn!");
         }
       };
@@ -82,6 +92,7 @@ const ChatMessages = () => {
   useEffect(() => {
     if (socket) {
       socket.on("newMessage", (data) => {
+        setConversations(withNewMessage(data.chatId, data));
         if (activeChat && data.chatId === activeChat._id) {
           setMessages((prev) => [...prev, data]);
         }
@@ -123,6 +134,7 @@ const ChatMessages = () => {
       if (res.data) {
         // Thêm tin nhắn vào state ngay lập tức (optimistic update)
         setMessages((prev) => [...prev, res.data]);
+        setConversations(withNewMessage(activeChat._id, res.data));
         sendMessage(
           activeChat._id,
           textToSend,
@@ -135,6 +147,7 @@ const ChatMessages = () => {
       console.error("Lỗi khi gửi tin nhắn!", error);
       // Khôi phục tin nhắn nếu lỗi
       setNewMessage(textToSend);
+      alert(error.response?.data?.message || "Gửi tin nhắn thất bại!");
     }
   };
 
@@ -150,7 +163,7 @@ const ChatMessages = () => {
 
       setConversations((prev) => prev.filter((c) => c._id !== chatId));
       if (activeChat?._id === chatId) setActiveChat(null);
-    } catch (error) {
+    } catch {
       console.error("Lỗi khi xóa chat!");
     }
   };
@@ -171,8 +184,10 @@ const ChatMessages = () => {
   };
 
   //Lấy thông tin đối phương trong cuộc trò chuyện
+  // Tài khoản đối phương có thể đã bị xóa (populate trả null) → hiển thị tên thay thế, không làm sập trang
   const getChatPartner = (chat) => {
-    return user._id === chat.buyer._id ? chat.seller : chat.buyer;
+    const partner = user._id === chat.buyer?._id ? chat.seller : chat.buyer;
+    return partner || { name: "Người dùng đã xóa" };
   };
 
   if (loading)
@@ -229,6 +244,9 @@ const ChatMessages = () => {
                     <div className={s.conversationName}>
                       {getChatPartner(chat)?.name}
                     </div>
+                    <div className="truncate text-[0.7rem] font-medium text-primary">
+                      {chat.property?.title || "Tin đăng đã bị xóa"}
+                    </div>
                     <div className={s.conversationPreview}>
                       {chat.messages.at(-1)?.text || "Bắt đầu cuộc trò chuyện"}
                     </div>
@@ -237,7 +255,7 @@ const ChatMessages = () => {
                   <button
                     onClick={(e) => handleDeleteChat(e, chat._id)}
                     className={s.deleteChatButton}
-                    title="Delete Conversation"
+                    title="Xóa cuộc trò chuyện"
                   >
                     <HiOutlineTrash />
                   </button>
@@ -272,8 +290,23 @@ const ChatMessages = () => {
                     )}
                   </div>
 
-                  <div className={s.chatPartnerName}>
-                    {getChatPartner(activeChat)?.name}
+                  <div className="min-w-0">
+                    <div className={s.chatPartnerName}>
+                      {getChatPartner(activeChat)?.name}
+                    </div>
+                    {/* cho biết cuộc trò chuyện đang về tin đăng nào */}
+                    {activeChat.property ? (
+                      <Link
+                        to={`/property/${activeChat.property._id}`}
+                        className="block truncate text-xs text-primary hover:underline"
+                      >
+                        {activeChat.property.title}
+                      </Link>
+                    ) : (
+                      <span className="block text-xs text-[#94a3b8]">
+                        Tin đăng đã bị xóa
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -315,7 +348,7 @@ const ChatMessages = () => {
                     </div>
 
                     <span className={s.messageTime}>
-                      {new Date(msg.createdAt).toLocaleTimeString([], {
+                      {new Date(msg.createdAt).toLocaleTimeString("vi-VN", {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}

@@ -19,7 +19,7 @@ const Contact = () => {
     email: user?.email || "",
     phone: user?.phone || "",
     message: "",
-    role: user?.role || "buyer",
+    role: user?.role === "seller" ? "seller" : "buyer",
   });
 
   const [loading, setLoading] = useState(false);

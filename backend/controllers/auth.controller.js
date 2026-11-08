@@ -4,17 +4,27 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { protect } from "../middlewares/auth.middleware.js";
-import { authorize } from "../middlewares/auth.middleware.js";
 import sendEmail from "../utils/sendEmail.js";
+import { isEmail, normalizeEmail } from "../utils/validate.js";
 //Register
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, password } = req.body;
+    const email = normalizeEmail(req.body.email);
+    // Không cho tự đăng ký tài khoản admin
+    const role = req.body.role === "seller" ? "seller" : "buyer";
+    if (!name?.trim() || !isEmail(email) || !password) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ họ tên, email hợp lệ và mật khẩu" });
+    }
+    if (String(password).length < 6) {
+      return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự" });
+    }
     //Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "Email này đã được đăng ký" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = Math.floor(
@@ -52,36 +62,37 @@ export const register = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("AUTH_ERROR:", error);
+    res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại sau" });
   }
 };
 
 //login
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = normalizeEmail(req.body.email);
+    const { password } = req.body;
     if (!email || !password) {
       return res
         .status(400)
         .json({ message: "Yêu cầu nhập email và mật khẩu" });
     }
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Người dùng không tồn tại" });
+    // Cùng một thông báo cho "sai email" và "sai mật khẩu" để không lộ email nào đã đăng ký
+    const isMatch = user ? await bcrypt.compare(String(password), user.password) : false;
+    if (!user || !isMatch) {
+      return res.status(400).json({ message: "Email hoặc mật khẩu không đúng" });
     }
 
     if (!user.isVerified) {
       return res.status(400).json({
+        code: "EMAIL_NOT_VERIFIED",
         message: "Vui lòng xác minh email của bạn trước khi đăng nhập",
       });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Mật khẩu không đúng" });
-    }
     if (user.isBlocked) {
       return res.status(403).json({
+        code: "ACCOUNT_BLOCKED",
         message:
           "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.",
       });
@@ -101,7 +112,8 @@ export const login = async (req, res) => {
       user,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("AUTH_ERROR:", error);
+    res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại sau" });
   }
 };
 
@@ -117,14 +129,16 @@ export const getMe = async (req, res) => {
       user,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("AUTH_ERROR:", error);
+    res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại sau" });
   }
 };
 
 //verify email
 export const verifyEmail = async (req, res) => {
   try {
-    let { email, code } = req.body;
+    let { code } = req.body;
+    const email = normalizeEmail(req.body.email);
     if (!email || !code) {
       return res
         .status(400)
@@ -138,11 +152,6 @@ export const verifyEmail = async (req, res) => {
     if (user.isVerified) {
       return res.status(400).json({ message: "Email đã được xác minh" });
     }
-    console.log("=== VERIFY EMAIL DEBUG ===");
-    console.log("Token trong Database:", user.verificationToken);
-    console.log("Type của token DB:", typeof user.verificationToken);
-    console.log("Code người dùng gửi:", code);
-    console.log("Type của code:", typeof code);
     if (String(user.verificationToken).trim() !== code) {
       return res.status(400).json({ message: "Mã xác minh không đúng" });
     }
@@ -156,7 +165,7 @@ export const verifyEmail = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: error.message,
+      message: "Lỗi máy chủ, vui lòng thử lại sau",
       success: false,
     });
   }
@@ -166,13 +175,16 @@ export const verifyEmail = async (req, res) => {
 // Forgot Password
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = normalizeEmail(req.body.email);
+    if (!email) {
+      return res.status(400).json({ message: "Vui lòng nhập email" });
+    }
     const user = await User.findOne({ email });
 
     if (!user) {
       return res
         .status(404)
-        .json({ message: "No user found with that email address" });
+        .json({ message: "Không tìm thấy tài khoản với email này" });
     }
 
     const resetToken = crypto.randomBytes(20).toString("hex");
@@ -191,12 +203,6 @@ export const forgotPassword = async (req, res) => {
     ).replace(/\/+$/, "");
     const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
-    console.log(
-      "DEBUG Reset Password - FRONTEND_URL:",
-      process.env.FRONTEND_URL,
-    );
-    console.log("DEBUG Reset Password - clientUrl:", clientUrl);
-    console.log("DEBUG Reset Password - resetUrl:", resetUrl);
 
     const message = `
             <h2>Password Reset Request</h2>
@@ -213,17 +219,18 @@ export const forgotPassword = async (req, res) => {
       });
       res
         .status(200)
-        .json({ message: "Password reset email sent", success: true });
+        .json({ message: "Đã gửi email đặt lại mật khẩu", success: true });
     } catch (error) {
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
       await user.save();
       return res
         .status(500)
-        .json({ message: "Could not send email", success: false });
+        .json({ message: "Không gửi được email, vui lòng thử lại sau", success: false });
     }
   } catch (err) {
-    res.status(500).json({ message: err.message, success: false });
+    console.error("AUTH_ERROR:", err);
+    res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại sau", success: false });
   }
 }; //for rest password we require the email
 
@@ -232,6 +239,9 @@ export const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
+    if (!password || String(password).length < 6) {
+      return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự", success: false });
+    }
 
     const resetPasswordToken = crypto
       .createHash("sha256")
@@ -255,6 +265,7 @@ export const resetPassword = async (req, res) => {
       .status(200)
       .json({ message: "Mật khẩu đã được đặt lại thành công", success: true });
   } catch (err) {
-    res.status(500).json({ message: err.message, success: false });
+    console.error("AUTH_ERROR:", err);
+    res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại sau", success: false });
   }
 };

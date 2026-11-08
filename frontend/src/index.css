@@ -2,6 +2,24 @@
 
 @import "tailwindcss";
 
+/* Tailwind v4 không đọc tailwind.config.js: khai báo màu theme ở đây để các class
+   như bg-primary, text-text-main, bg-bg-alt, border-border, shadow-card hoạt động. */
+@theme {
+  --color-primary: #0d9488;
+  --color-primary-light: #ccfbf1;
+  --color-primary-dark: #0f766e;
+  --color-secondary: #f0fdfa;
+  --color-accent: #f59e0b;
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+  --color-bg-main: #ffffff;
+  --color-bg-alt: #f9fafb;
+  --color-border: #e5e7eb;
+  --color-border-color: #e5e7eb;
+  --shadow-card:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
 @layer base {
   :root {
     --primary: #0d9488;
@@ -26,7 +44,7 @@
   }
 
   body {
-    @apply font-sans text-[#111827] bg-[#ffffff] leading-relaxed antialiased overflow-x-hidden;
+    @apply font-sans text-[#111827] bg-[#ffffff] leading-relaxed antialiased overflow-x-clip;
   }
 
   h1,
@@ -74,7 +92,7 @@
   }
 
   .btn-outline {
-    @apply bg-transparent border border-border text-[#111827] hover:bg-[#f9fafb] hover:border-[#111827] hover:-translate-y-0.5;
+    @apply bg-transparent border border-[#e5e7eb] text-[#111827] hover:bg-[#f9fafb] hover:border-[#111827] hover:-translate-y-0.5;
   }
 
   /* Layouts */
@@ -87,11 +105,11 @@
   }
 
   .dashboard-layout {
-    @apply flex min-h-screen bg-[#f8fafc] overflow-x-hidden relative;
+    @apply flex min-h-screen bg-[#f8fafc] overflow-x-clip relative;
   }
 
   .dashboard-main {
-    @apply flex-1 flex flex-col ml-[260px] min-w-0 transition-all duration-300 overflow-x-hidden w-full lg:ml-0;
+    @apply flex-1 flex flex-col ml-[260px] min-w-0 transition-all duration-300 overflow-x-clip w-full lg:ml-0;
   }
 
   .dashboard-content {
@@ -104,7 +122,7 @@
 
   /* Cards */
   .card-premium {
-    @apply bg-white rounded-3xl border border-border transition-all duration-[0.4s] overflow-hidden hover:-translate-y-2.5 hover:shadow-card;
+    @apply bg-white rounded-3xl border border-[#e5e7eb] transition-all duration-[0.4s] overflow-hidden hover:-translate-y-2.5 hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)];
   }
 
   /* Badges */
@@ -153,8 +171,11 @@
     scrollbar-width: none;
   }
 
+  /* Không dùng "forwards": animation transform còn giữ giá trị cuối sẽ biến phần tử thành khung chứa
+     của mọi con position: fixed (hộp thoại trong trang admin/seller bị kẹt trong vùng cuộn
+     thay vì phủ toàn màn hình). Trạng thái cuối trùng với style mặc định nên không cần giữ lại. */
   .fade-in {
-    @apply animate-[fadeIn_0.8s_ease-out_forwards];
+    @apply animate-[fadeIn_0.8s_ease-out];
   }
 
   @media (max-width: 1024px) {
@@ -242,4 +263,106 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* Dropdown của component Select */
+@keyframes selectIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Khung trợ lý AI */
+@keyframes aiPanelIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ===== Icon chatbot RealEstate: hiệu ứng động ===== */
+@keyframes aiFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+/* nghiêng đầu "vẫy chào" ngắn, rồi đứng yên phần lớn thời gian */
+@keyframes aiWave {
+  0%, 62%, 100% { transform: rotate(0deg); }
+  66% { transform: rotate(-12deg); }
+  70% { transform: rotate(10deg); }
+  74% { transform: rotate(-8deg); }
+  78% { transform: rotate(6deg); }
+  82% { transform: rotate(0deg); }
+}
+@keyframes aiHop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-5px) scale(1.06, 0.96); }
+  55% { transform: translateY(0) scale(0.96, 1.05); }
+  75% { transform: translateY(-2px) scale(1.02); }
+}
+@keyframes aiThinking {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-2px) rotate(-6deg); }
+  75% { transform: translateY(-2px) rotate(6deg); }
+}
+@keyframes aiHalo {
+  0% { transform: scale(1); opacity: 0.45; }
+  70%, 100% { transform: scale(1.45); opacity: 0; }
+}
+@keyframes aiSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes aiTwinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  45% { opacity: 1; transform: scale(1) rotate(90deg); }
+  60% { opacity: 0.8; transform: scale(0.85) rotate(120deg); }
+}
+@keyframes aiPop {
+  0% { opacity: 0; transform: scale(0.4) translateY(10px); }
+  60% { opacity: 1; transform: scale(1.08) translateY(-2px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+/* Khung chat: đóng thì thu nhỏ + mờ dần về phía nút chat (góc phải dưới) */
+@keyframes aiPanelOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(16px) scale(0.9); }
+}
+/* Nút chat xuất hiện lại sau khi đóng khung */
+@keyframes aiFabIn {
+  0% { opacity: 0; transform: translateY(10px) scale(0.6); }
+  65% { opacity: 1; transform: translateY(-3px) scale(1.06); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ai-panel-out {
+  animation: aiPanelOut 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  transform-origin: bottom right;
+}
+.ai-fab-in {
+  animation: aiFabIn 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: bottom right;
+}
+.ai-float { display: inline-flex; animation: aiFloat 3.2s ease-in-out infinite; }
+.ai-wave { animation: aiWave 6s ease-in-out infinite; transform-origin: 50% 85%; }
+.group:hover .ai-wave { animation: aiHop 0.7s ease-in-out; }
+.ai-thinking { animation: aiThinking 0.9s ease-in-out infinite; transform-origin: 50% 85%; }
+.ai-halo { animation: aiHalo 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+.ai-ring { animation: aiSpin 4s linear infinite; }
+.ai-twinkle { animation: aiTwinkle 2.8s ease-in-out infinite; }
+.ai-pop { animation: aiPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-float, .ai-wave, .ai-thinking, .ai-halo, .ai-ring, .ai-twinkle, .ai-pop,
+  .ai-panel-out, .ai-fab-in,
+  .group:hover .ai-wave {
+    animation: none;
+  }
+}
+
+/* Khung chi tiết trượt lên trên mobile (vd chi tiết khách hàng của seller) */
+@keyframes sheetIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sheet-in { animation: sheetIn 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .sheet-in { animation: none; }
 }

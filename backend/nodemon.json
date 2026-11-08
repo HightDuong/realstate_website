@@ -1,0 +1,7 @@
+{
+  "watch": ["*.js", "ai", "config", "controllers", "middlewares", "models", "routes", "utils"],
+  "ignore": ["tests/*", "scripts/*"],
+  "env": {
+    "MONGODB_DB_NAME": "realestate_dev"
+  }
+}

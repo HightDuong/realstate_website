@@ -234,7 +234,7 @@ const Profile = () => {
                   <HiOutlinePhone size={24} />
                 </div>
                 <div>
-                  <div className={s.infoLabel}>Phone</div>
+                  <div className={s.infoLabel}>Số điện thoại</div>
                   <div className={s.infoValue}>
                     {user?.phone || "Không cung cấp"}
                   </div>

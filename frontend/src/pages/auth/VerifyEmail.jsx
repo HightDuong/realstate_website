@@ -87,7 +87,7 @@ const VerifyEmail = () => {
               disabled={isLoading}
               className={s.submitButton}
             >
-              {isLoading ? "Đang xác minh..." : "Verify Email"}
+              {isLoading ? "Đang xác minh..." : "Xác minh Email"}
             </button>
           </form>
         </div>

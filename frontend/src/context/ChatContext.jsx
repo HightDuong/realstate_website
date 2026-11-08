@@ -12,7 +12,7 @@ import API_URL from "../config";
 const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   const [socket, setSocket] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
@@ -25,8 +25,9 @@ export const ChatProvider = ({ children }) => {
   }, [user]);
 
   useEffect(() => {
-    if (user) {
-      const newSocket = io(API_URL);
+    if (user && token) {
+      // server yêu cầu JWT để kết nối socket (chỉ người trong cuộc trò chuyện mới nghe được tin nhắn)
+      const newSocket = io(API_URL, { auth: { token } });
 
       setSocket(newSocket);
 
@@ -38,7 +39,7 @@ export const ChatProvider = ({ children }) => {
 
       return () => newSocket.close();
     }
-  }, [user]);
+  }, [user, token]);
 
   //to join a chat
   const joinChat = (chatId) => {

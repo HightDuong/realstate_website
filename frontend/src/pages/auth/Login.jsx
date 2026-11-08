@@ -56,7 +56,7 @@ const Login = () => {
       <div className={s.containerCenter}>
         <div className={s.card}>
           <h2 className={s.title}>Chào mừng bạn</h2>
-          <p className={s.subtitle}>Nhập đầy đủ thông tin để đăng ký</p>
+          <p className={s.subtitle}>Đăng nhập để tiếp tục sử dụng RealEstate</p>
 
           {error && <div className={s.error}>{error}</div>}
           <form onSubmit={handleSubmit} className={s.form}>
@@ -115,7 +115,7 @@ const Login = () => {
             <button
               className={s.submitButton}
               type="submit"
-              disable={isLoading}
+              disabled={isLoading}
             >
               {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>

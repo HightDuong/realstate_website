@@ -15,15 +15,18 @@ import {
   HiOutlineLockClosed,
   HiOutlineLockOpen,
   HiOutlineMail,
+  HiOutlineSparkles,
   HiOutlineTrash,
 } from "react-icons/hi";
+
+const ROLE_LABELS = { buyer: "Người mua", seller: "Người bán", admin: "Quản trị" };
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState("all");
   const [openFilter, setOpenFilter] = useState(false);
-  const { token } = useAuth();
+  const { token, user: currentUser } = useAuth();
 
   const filterRef = useRef(null);
 
@@ -66,21 +69,36 @@ const AdminUsers = () => {
   const handleBlock = async (id) => {
     try {
       const res = await axios.patch(
-        `${API_URL}api/admin/users/${id}/block`,
+        `${API_URL}api/admin/users/block/${id}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
       if (res.data.success) {
-        setUsers(
-          users.map((u) =>
+        setUsers((prev) =>
+          prev.map((u) =>
             u._id === id ? { ...u, isBlocked: res.data.isBlocked } : u,
           ),
         );
       }
     } catch (error) {
-      alert("Thao tác thất bại", error);
+      alert(error.response?.data?.message || "Thao tác thất bại!");
+    }
+  };
+
+  // cấp thêm lượt "AI viết tin" hôm nay cho người bán (khi họ báo đã dùng hết lượt)
+  const handleGrantAiQuota = async (user) => {
+    if (!window.confirm(`Cấp thêm 20 lượt AI viết tin hôm nay cho ${user.name}?`)) return;
+    try {
+      const res = await axios.post(
+        `${API_URL}api/admin/users/${user._id}/ai-listing-quota`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      alert(res.data.message);
+    } catch (error) {
+      alert(error.response?.data?.message || "Cấp thêm lượt thất bại!");
     }
   };
 
@@ -97,9 +115,9 @@ const AdminUsers = () => {
       await axios.delete(`${API_URL}api/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUsers(users.filter((u) => u._id != id));
+      setUsers((prev) => prev.filter((u) => u._id !== id));
     } catch (error) {
-      alert("Xóa người dùng thất bại!");
+      alert(error.response?.data?.message || "Xóa người dùng thất bại!");
     }
   };
 
@@ -212,7 +230,7 @@ const AdminUsers = () => {
 
                     <td className={s.tdRole}>
                       <span className={s.roleBadge(user.role)}>
-                        {user.role}
+                        {ROLE_LABELS[user.role] || user.role}
                       </span>
                     </td>
 
@@ -245,7 +263,22 @@ const AdminUsers = () => {
                       )}
                     </td>
                     <td className={s.tdActions}>
+                      {/* Không cho khóa/xóa tài khoản quản trị viên (kể cả chính mình) */}
+                      {user.role === "admin" ? (
+                        <span className="text-xs text-[#94a3b8]">
+                          {user._id === currentUser?._id ? "Bạn" : "Quản trị viên"}
+                        </span>
+                      ) : (
                       <div className={s.actionsWrapper}>
+                        {user.role === "seller" && (
+                          <button
+                            onClick={() => handleGrantAiQuota(user)}
+                            className="p-2 rounded-lg border border-[#99f6e4] bg-secondary text-primary hover:bg-primary-light transition-colors"
+                            title="Cấp thêm 20 lượt AI viết tin hôm nay"
+                          >
+                            <HiOutlineSparkles size={18} />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleBlock(user._id)}
                           className={s.blockButton(user.isBlocked)}
@@ -265,6 +298,7 @@ const AdminUsers = () => {
                           <HiOutlineTrash size={18} />
                         </button>
                       </div>
+                      )}
                     </td>
                   </tr>
                 ))

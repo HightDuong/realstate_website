@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { sellerDashboardStyles as s } from "../../assets/dummyStyles";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
@@ -17,9 +17,17 @@ import {
 } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import PropertyCard from "../../components/common/PropertyCard";
+import useNotificationEvent from "../../hooks/useNotificationEvent";
+import {
+  INQUIRY_STATUS_LABELS,
+  getInquiryStatus,
+  getPropertyTypeLabel,
+  getStatusLabel,
+  joinAddress,
+} from "../../utils/propertyLabels";
 
 const SellerDashboard = () => {
-  const { logout, token } = useAuth();
+  const { token } = useAuth();
   const [stats, setStats] = useState({
     totalProperties: 0,
     activeListings: 0,
@@ -32,6 +40,11 @@ const SellerDashboard = () => {
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  // tăng lên khi tin được duyệt / bị từ chối → tải lại số liệu và danh sách
+  const [reloadKey, setReloadKey] = useState(0);
+  useNotificationEvent(["property_approved", "property_rejected", "inquiry_new"], () =>
+    setReloadKey((k) => k + 1),
+  );
 
   //to fetch all data
   useEffect(() => {
@@ -44,7 +57,7 @@ const SellerDashboard = () => {
           axios.get(`${API_URL}api/property/my`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${API_URL}api/inquiry/seller`, {
+          axios.get(`${API_URL}api/inquiry/seller?limit=3`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -68,7 +81,7 @@ const SellerDashboard = () => {
       }
     };
     fetchData();
-  }, [token]);
+  }, [token, reloadKey]);
 
   //to delete a property
   const handleDelete = async (id) => {
@@ -78,7 +91,7 @@ const SellerDashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProperties(properties.filter((p) => p._id !== id));
-    } catch (error) {
+    } catch {
       alert("Xóa thất bại!");
     }
   };
@@ -131,18 +144,23 @@ const SellerDashboard = () => {
   };
   //to export the data
   const handleExport = () => {
-    const headers = ["Title", "Location", "Type", "Price", "Status", "Views"];
+    const headers = ["Tiêu đề", "Vị trí", "Loại hình", "Giá", "Trạng thái", "Lượt xem"];
     const csvRows = properties.map((p) => [
       p.title,
-      `${p.area}, ${p.city}`,
-      p.propertyType,
+      joinAddress(p.area, p.city),
+      getPropertyTypeLabel(p.propertyType),
       p.price,
-      p.status,
+      getStatusLabel(p.status),
       p.views || 0,
     ]);
 
-    const csvContent = [headers, ...csvRows].map((e) => e.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    // Bọc mọi ô trong dấu nháy kép (nhân đôi nháy bên trong) để dấu phẩy/xuống dòng không làm lệch cột
+    const escapeCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+    const csvContent = [headers, ...csvRows]
+      .map((row) => row.map(escapeCell).join(","))
+      .join("\r\n");
+    // BOM để Excel nhận đúng UTF-8 (tiếng Việt có dấu)
+    const blob = new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
@@ -168,16 +186,28 @@ const SellerDashboard = () => {
       color: "#0d6e59",
     },
     {
-      title: "Khách hàng tiềm năng",
-      value: stats.totalInquiries?.toLocaleString() || "0",
+      title: "Khách hàng đang chăm sóc",
+      value: (stats.openInquiries ?? 0).toLocaleString(),
       icon: HiOutlineUserGroup,
       color: "#0d6e59",
+      hint: stats.totalInquiries
+        ? `Tổng ${stats.totalInquiries.toLocaleString()} yêu cầu đã nhận`
+        : null,
+      to: "/inquiries",
     },
     {
-      title: "BĐS đang hoạt động",
+      title: "BĐS đang hiển thị",
       value: stats.activeListings?.toLocaleString() || "0",
       icon: HiOutlineLibrary,
       color: "#0d6e59",
+      hint:
+        [
+          stats.pendingListings ? `${stats.pendingListings} chờ duyệt` : "",
+          stats.rejectedListings ? `${stats.rejectedListings} bị từ chối` : "",
+        ]
+          .filter(Boolean)
+          .join(" · ") || null,
+      to: "/my-properties",
     },
     {
       title: "BĐS đã bán",
@@ -202,7 +232,7 @@ const SellerDashboard = () => {
     <>
       <header className={s.header}>
         <div className={s.headerLeft}>
-          <h1 className={s.headerTitle}>Seller Dashboard</h1>
+          <h1 className={s.headerTitle}>Bảng điều khiển người bán</h1>
           <p className={s.headerSubtitle}>
             Quản lý danh mục đầu tư bất động sản và theo dõi hiệu quả kinh
             doanh.
@@ -221,19 +251,24 @@ const SellerDashboard = () => {
 
       {/* stats grid */}
       <div className={s.statsGrid}>
-        {statCards.map((card, i) => (
-          <div
-            style={{ "--card-color": card.color }}
-            key={i}
-            className={s.statCard}
-          >
-            <div className={s.statIconWrapper}>
-              <card.icon size={20} />
-            </div>
-            <div className={s.statTitle}>{card.title}</div>
-            <div className={s.statValue}>{card.value}</div>
-          </div>
-        ))}
+        {statCards.map((card, i) => {
+          const Card = card.to ? Link : "div";
+          return (
+            <Card
+              style={{ "--card-color": card.color }}
+              key={i}
+              to={card.to}
+              className={`${s.statCard} ${card.to ? s.statCardLink : ""}`}
+            >
+              <div className={s.statIconWrapper}>
+                <card.icon size={20} />
+              </div>
+              <div className={s.statTitle}>{card.title}</div>
+              <div className={s.statValue}>{card.value}</div>
+              {card.hint && <div className={s.statHint}>{card.hint}</div>}
+            </Card>
+          );
+        })}
       </div>
       <div className={s.listingsSection}>
         <div className={s.listingsHeader}>
@@ -260,6 +295,7 @@ const SellerDashboard = () => {
                 <PropertyCard
                   key={p._id}
                   property={p}
+                  showModeration
                   renderActions={() => (
                     <div className={s.propertyActions}>
                       {/* <button
@@ -332,8 +368,12 @@ const SellerDashboard = () => {
           <h2 className={s.widgetTitle}>Yêu cầu tư vấn gần đây</h2>
           <p className={s.widgetSubtitle}>Khách hàng tiềm năng mới liên hệ</p>
           <div className={s.inquiriesList}>
-            {inquiries.map((inq, i) => (
-              <div key={inq._id} className={s.inquiryItem}>
+            {inquiries.map((inq) => (
+              <Link
+                key={inq._id}
+                to={`/inquiries?id=${inq._id}`}
+                className={`${s.inquiryItem} rounded-xl -mx-2 px-2 py-1 hover:bg-[#f8fafc]`}
+              >
                 <div className={s.inquiryLeft}>
                   <div className={s.inquiryIcon}>
                     <HiOutlineBell size={18} color="var(--primary)" />
@@ -343,24 +383,31 @@ const SellerDashboard = () => {
                       {inq.buyer?.name || "Khách hàng tiềm năng"}
                     </div>
                     <div className={s.inquiryProperty}>
-                      {inq.property?.title?.length > 30
-                        ? inq.property?.title?.slice(0, 30) + "..."
-                        : inq.property?.title}
+                      {!inq.property
+                        ? "Tin đăng đã bị xóa"
+                        : inq.property.title?.length > 30
+                          ? inq.property.title.slice(0, 30) + "..."
+                          : inq.property.title}
                     </div>
                   </div>
                 </div>
                 <div className={s.inquiryRight}>
                   <div className={s.inquiryDate}>
-                    {new Date(inq.createdAt).toLocaleDateString()}
+                    {new Date(inq.createdAt).toLocaleDateString("vi-VN")}
                   </div>
-                  <span className={s.inquiryStatus(inq.status)}>
-                    {inq.status === "read" ? "Đã đọc" : "Mới"}
+                  <span className={s.inquiryStatus(getInquiryStatus(inq))}>
+                    {INQUIRY_STATUS_LABELS[getInquiryStatus(inq)]}
                   </span>
                 </div>
-              </div>
+              </Link>
             ))}
             {inquiries.length === 0 && (
               <p className={s.noInquiries}>Không có yêu cầu gần đây</p>
+            )}
+            {inquiries.length > 0 && (
+              <Link to="/inquiries" className="text-sm font-semibold text-primary hover:underline">
+                Quản lý tất cả khách hàng →
+              </Link>
             )}
           </div>
         </div>
